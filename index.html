@@ -48,7 +48,39 @@
   .question-figure img{max-height:185px}
   .answer{font-size:13px;min-height:58px}
 }
-</style></style></head><body>
+</style></style><style>
+/* Chemistry-inspired question card */
+#quiz:not(.hide){border:1px solid #dce9e6;border-top:4px solid var(--teal);background:linear-gradient(160deg,#fff 0%,#fbfefd 100%);box-shadow:0 24px 64px #123a3018}
+.qtop>span:first-child{display:inline-flex;align-items:center;gap:9px;background:#eef7f4;color:#17685e;padding:8px 13px;border:1px solid #d8ebe5;border-radius:999px;font-size:12px;letter-spacing:.1px}
+.qtop>span:first-child:before{content:'✦';color:#88a84c;font-size:12px}
+.timer{border:1px solid #f1dfc2;box-shadow:0 4px 12px #a5671010}
+.progress{height:8px;background:linear-gradient(90deg,#edf4f2,#e6eeeb);border:1px solid #e0ebe8}
+.progress span{background:linear-gradient(90deg,#1a9384,#137c70 72%,#80b999);box-shadow:0 0 10px #137c7040}
+.question-figure{padding:8px;border-color:#d6e7e2;background:linear-gradient(145deg,#eaf4f1,#f8fbfa 46%,#eaf1f3);box-shadow:0 15px 34px #153b3218}
+.question-figure img{border:1px solid #ffffffb0}
+.question-figure figcaption:before{content:'⚗  ';color:var(--teal);font-weight:700}
+.qtitle{position:relative;isolation:isolate;overflow:hidden;padding:20px 22px 20px 78px;border:1px solid #dceae6;border-right:4px solid var(--teal);border-radius:16px;background:linear-gradient(105deg,#f1f8f6 0%,#fbfdfc 64%,#fff 100%);box-shadow:inset 0 1px #fff,0 7px 18px #123a3008}
+.qtitle:before{content:'التحدي الكيميائي';display:block;margin-bottom:7px;color:var(--teal);font-size:11px;font-weight:700;letter-spacing:.3px}
+.qtitle:after{content:'H₂O';position:absolute;left:17px;top:50%;transform:translateY(-50%) rotate(-8deg);color:#137c7024;font:700 24px 'Space Grotesk',sans-serif;letter-spacing:-1px;pointer-events:none}
+.answer{position:relative;border-color:#e0e9e8;border-radius:14px;background:linear-gradient(135deg,#fff,#fcfefd);box-shadow:0 3px 10px #102b2408}
+.answer .letter{background:#edf5f2;color:#17685e;border:1px solid #dcebe6}
+.answer:hover{transform:translateY(-1px);box-shadow:0 7px 16px #137c7015}
+.answer.selected{border-color:#168578;background:linear-gradient(120deg,#eaf6f3,#f7fbf9);box-shadow:0 0 0 2px #137c7010,0 6px 16px #137c7014}
+.answer.selected .letter{border-color:var(--teal)}
+.qactions .btn{min-width:112px;box-shadow:0 6px 14px #137c7020}
+@media(max-width:760px){
+ #quiz:not(.hide){border-top-width:3px}
+ .qtop>span:first-child{padding:7px 10px;font-size:11px}
+ .question-figure{padding:5px;background:linear-gradient(145deg,#eaf4f1,#f8fbfa)}
+ .qtitle{padding:14px 15px 14px 62px;border-radius:13px;font-size:clamp(18px,5.4vw,22px)}
+ .qtitle:before{font-size:10px;margin-bottom:5px}
+ .qtitle:after{left:12px;font-size:19px}
+ .answer{box-shadow:0 3px 10px #102b2408}
+ .answer:hover{transform:none}
+ .qactions .btn{min-width:0}
+}
+@media(prefers-reduced-motion:reduce){.answer:hover{transform:none}.progress span{transition:none}}
+</style></head><body>
 <header class="top"><div class="brand"><div class="brandmark">⚗</div><div>عباقرة الكيمياء التقنية<small>مسابقة المعرفة والتميّز</small></div></div></header>
 <section class="hero"><div class="hero-inner"><span class="eyebrow"><i class="dot"></i> تحدَّ معرفتك</span><h1>اختبار الكيمياء</h1><p>أسئلة متنوعة في أساسيات الكيمياء… ونتيجتك تصنع الفرق.</p></div></section>
 <main id="entry" class="layout"><section class="card main"><div class="section-head"><h2>ابدأ رحلتك</h2><span class="duration">◷ ١٠ دقائق</span></div><div class="fields"><div class="field"><label for="student">اسم الطالب</label><input id="student" autocomplete="name" maxlength="80" placeholder="اكتب اسمك الكامل"></div><div class="field"><label for="email">البريد الإلكتروني المدرسي</label><input id="email" type="email" autocomplete="email" maxlength="254" dir="ltr" placeholder="student@jzb.moe.gov.sa"></div><div class="field"><label for="grade">الصف الدراسي</label><select id="grade"><option value="" selected disabled>اختر الصف</option><option>أول ثانوي</option><option>ثاني ثانوي</option><option>ثالث ثانوي</option></select></div><div class="field"><label for="section">الشعبة</label><select id="section"><option value="" selected disabled>اختر الشعبة</option><option>أ</option><option>ب</option><option>ج</option><option>د</option></select></div></div><div class="note">لديك محاولة واحدة فقط. يبدأ احتساب الوقت عند بدء الاختبار، وينتهي تلقائيًا بعد ١٠ دقائق.</div><div id="student-status" class="student-status hide" aria-live="polite"></div><button class="btn full" id="start">ابدأ الاختبار <span>←</span></button></section></main>
