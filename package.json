@@ -2,8 +2,17 @@
   "name": "akhtbart-chemistry-competition",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/build.js",
+    "db:migrate": "node scripts/migrate-db.js",
+    "smoke:api": "node scripts/smoke-api.js"
+  },
   "dependencies": {
+    "@neon/config": "^1.9.2",
+    "@neon/env": "^1.6.3",
     "@neondatabase/serverless": "1.2.0"
   }
 }
