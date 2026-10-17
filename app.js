@@ -18,7 +18,7 @@ function sanitizeData(value){if(!value||typeof value!=='object'||Array.isArray(v
 function getData(){try{return sanitizeData(JSON.parse(localStorage.getItem(storeKey)))}catch{return{visits:0,attempts:[]}}}
 function putData(data){localStorage.setItem(storeKey,JSON.stringify(data))}
 function normalizeEmail(value){return String(value||'').trim().toLowerCase()}
-function validSchoolEmail(value){return /^[a-z0-9]+@jzb\.moe\.gov\.sa$/i.test(String(value||'').trim())}
+function validSchoolEmail(value){return /^[a-z0-9_%+-]+(?:\.[a-z0-9_%+-]+)*@jzb\.moe\.gov\.sa$/i.test(String(value||'').trim())}
 function validStudentName(value){const name=String(value||'').normalize('NFKC').trim().replace(/\s+/g,' ');if(name.length<5||name.length>80||name.split(' ').length<2||!/^[\p{L}\p{M} .'-]+$/u.test(name))return false;const letters=name.replace(/[\s.'-]/g,'').toLocaleLowerCase();return new Set([...letters]).size>=4&&!/(.)\1{3,}/u.test(letters)&&name.split(' ').every(word=>word.length>=2&&new Set([...word]).size>=2)}
 function findAttempt(email){const key=normalizeEmail(email);return getData().attempts.find(x=>normalizeEmail(x.email)===key)}
 function timeText(sec){return `${Math.floor(sec/60).toString().padStart(2,'0')}:${(sec%60).toString().padStart(2,'0')}`}
