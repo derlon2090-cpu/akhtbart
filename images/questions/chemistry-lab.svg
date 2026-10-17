@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="360" viewBox="0 0 820 360" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">مختبر الكيمياء</title>
+  <desc id="desc">رسم توضيحي أنيق لتجربة كيميائية وأدوات مخبرية وجزيئات.</desc>
+  <defs>
+    <linearGradient id="bg" x1="45" y1="22" x2="770" y2="350" gradientUnits="userSpaceOnUse"><stop stop-color="#F0FAF8"/><stop offset="1" stop-color="#F4F7FC"/></linearGradient>
+    <linearGradient id="glass" x1="270" y1="105" x2="390" y2="282" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF" stop-opacity=".96"/><stop offset="1" stop-color="#D8F4ED" stop-opacity=".85"/></linearGradient>
+    <linearGradient id="liquid" x1="328" y1="198" x2="328" y2="267" gradientUnits="userSpaceOnUse"><stop stop-color="#26A990"/><stop offset="1" stop-color="#117E71"/></linearGradient>
+    <filter id="shadow" x="177" y="70" width="466" height="274" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="12"/></filter>
+  </defs>
+  <rect x="1" y="1" width="818" height="358" rx="24" fill="url(#bg)" stroke="#DDEAE9"/>
+  <circle cx="99" cy="75" r="31" fill="#DDF2ED"/><circle cx="724" cy="279" r="45" fill="#E5EBF8"/>
+  <path d="M96 273c38-42 67-54 102-58m424-120c34 8 58 24 82 52" stroke="#C8E4DF" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 10"/>
+  <g opacity=".9"><circle cx="115" cy="216" r="7" fill="#15917E"/><circle cx="143" cy="196" r="12" fill="#A1D9CE"/><circle cx="171" cy="218" r="8" fill="#4779A8"/><path d="m121 212 13-9m19 0 12 10" stroke="#85BDB3" stroke-width="3"/></g>
+  <g opacity=".9"><circle cx="669" cy="102" r="8" fill="#15917E"/><circle cx="700" cy="83" r="13" fill="#A1D9CE"/><circle cx="732" cy="106" r="9" fill="#4779A8"/><path d="m677 98 12-9m21 0 14 11" stroke="#85BDB3" stroke-width="3"/></g>
+  <ellipse cx="411" cy="302" rx="211" ry="22" fill="#17344B" opacity=".10" filter="url(#shadow)"/>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M283 93h90m-70 0v39l-54 126c-8 19 6 40 27 40h105c21 0 35-21 27-40l-54-126V93" fill="url(#glass)" stroke="#4B8290" stroke-width="5"/>
+    <path d="M259 215h139l22 51c7 16-5 32-22 32H277c-17 0-29-16-22-32l4-10" fill="url(#liquid)"/>
+    <path d="M271 215c20 9 39-8 60 0s40-8 60 0" stroke="#B4F0E4" stroke-width="5"/>
+    <path d="M297 104h63" stroke="#A3BBC2" stroke-width="4"/>
+    <circle cx="303" cy="248" r="5" fill="#D7FFF5"/><circle cx="343" cy="264" r="7" fill="#D7FFF5"/><circle cx="375" cy="239" r="4" fill="#D7FFF5"/>
+    <path d="M466 110v110m0 0c-31 0-56 25-56 56v7h112v-7c0-31-25-56-56-56Zm-22-73h44" fill="#FFF" fill-opacity=".75" stroke="#648DA0" stroke-width="5"/>
+    <path d="M419 260h94" stroke="#30A993" stroke-width="15"/><path d="M432 250c8-10 17-10 25 0s17 10 25 0 17-10 25 0" stroke="#B5F0E5" stroke-width="3"/>
+    <path d="M551 161h54v96h-54z" fill="#FFF" fill-opacity=".8" stroke="#7697A5" stroke-width="5"/><path d="M560 193h36v56h-36z" fill="#EABF59"/><path d="M560 224h36v25h-36z" fill="#42A994"/><path d="M559 177h5m7 0h5m7 0h5m7 0h5" stroke="#7697A5" stroke-width="3"/>
+  </g>
+  <g font-family="Arial,sans-serif" font-weight="700"><text x="327" y="326" fill="#176F68" font-size="16" text-anchor="middle">تجربة كيميائية</text><text x="466" y="326" fill="#466B82" font-size="16" text-anchor="middle">ملاحظة · تحليل · استنتاج</text></g>
+</svg>
