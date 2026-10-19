@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 
@@ -22,6 +22,7 @@ for (const file of javascriptFiles) {
   }
 }
 
+if (!existsSync('images/ministry-of-education.png')) throw new Error('Expected the official Ministry of Education logo asset.');
 const questionImages = readdirSync('images/questions').filter(file => file.endsWith('.svg'));
 if (questionImages.length < 10) throw new Error('Expected at least 10 chemistry question illustrations.');
 console.log(`Build checks passed: ${javascriptFiles.length} JavaScript files and ${questionImages.length} question illustrations.`);
