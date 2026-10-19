@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS chemistry_attempts (
 );
 
 CREATE INDEX IF NOT EXISTS chemistry_attempts_started_at_idx ON chemistry_attempts (started_at DESC);
+CREATE INDEX IF NOT EXISTS chemistry_attempts_admin_page_idx ON chemistry_attempts (started_at DESC, attempt_id DESC);
 
 CREATE TABLE IF NOT EXISTS chemistry_visits (
   visitor_id uuid PRIMARY KEY,
