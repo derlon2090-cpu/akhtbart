@@ -2,7 +2,7 @@ import { readdirSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 
-const javascriptFiles = ['app.js'];
+const javascriptFiles = ['app.js', 'question-report.js'];
 for (const directory of ['api', 'lib']) {
   const visit = path => {
     for (const entry of readdirSync(path)) {
