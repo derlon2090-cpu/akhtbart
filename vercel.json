@@ -41,6 +41,14 @@
       "destination": "/private-quiz.html?slug=:slug"
     },
     {
+      "source": "/api/studio/:endpoint",
+      "destination": "/api/platform?group=studio&endpoint=:endpoint"
+    },
+    {
+      "source": "/api/public/:endpoint",
+      "destination": "/api/platform?group=public&endpoint=:endpoint"
+    },
+    {
       "source": "/students",
       "destination": "/index.html"
     },
