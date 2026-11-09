@@ -84,6 +84,11 @@
   "outputDirectory": ".",
   "redirects": [
     {
+      "source": "/",
+      "destination": "/studio",
+      "permanent": false
+    },
+    {
       "source": "/admin",
       "destination": "/studio",
       "permanent": false
