@@ -29,6 +29,33 @@
           "value": "max-age=31536000"
         }
       ]
+    },
+    {
+      "source": "/studio",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/studio.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/studio.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        }
+      ]
     }
   ],
   "rewrites": [
@@ -51,12 +78,15 @@
     {
       "source": "/students",
       "destination": "/index.html"
-    },
-    {
-      "source": "/admin",
-      "destination": "/studio.html"
     }
   ],
   "buildCommand": null,
-  "outputDirectory": "."
+  "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/admin",
+      "destination": "/studio",
+      "permanent": false
+    }
+  ]
 }
