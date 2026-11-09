@@ -47,3 +47,102 @@ INSERT INTO chemistry_questions (position, question, options, correct_index) VAL
 (9, 'ما اسم العملية التي يتحول فيها السائل إلى غاز من سطحه؟', '["التكاثف","التجمد","التسامي","التبخر"]'::jsonb, 3),
 (10, 'أي مما يأتي يُستخدم عادةً لزيادة سرعة التفاعل الكيميائي دون أن يُستهلك؟', '["المذيب","العامل الحفاز","الناتج","المتفاعل المحدد"]'::jsonb, 1)
 ON CONFLICT (position) DO NOTHING;
+
+-- Extensible private quiz studio and database-backed access code sessions.
+CREATE TABLE IF NOT EXISTS studio_access_codes (
+  access_code_id uuid PRIMARY KEY,
+  code_hash bytea NOT NULL UNIQUE,
+  code_hint text NOT NULL,
+  role text NOT NULL CHECK (role IN ('viewer','quiz_creator','manager','superadmin')),
+  max_uses integer CHECK (max_uses IS NULL OR max_uses > 0),
+  used_count integer NOT NULL DEFAULT 0 CHECK (used_count >= 0),
+  expires_at timestamptz,
+  revoked_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid REFERENCES studio_access_codes(access_code_id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS studio_access_codes_status_idx ON studio_access_codes (revoked_at, expires_at, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS studio_sessions (
+  session_id uuid PRIMARY KEY,
+  token_hash bytea NOT NULL UNIQUE,
+  access_code_id uuid REFERENCES studio_access_codes(access_code_id) ON DELETE CASCADE,
+  role text NOT NULL CHECK (role IN ('viewer','quiz_creator','manager','superadmin')),
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  revoked_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS studio_sessions_expiry_idx ON studio_sessions (expires_at);
+
+CREATE TABLE IF NOT EXISTS studio_quizzes (
+  quiz_id uuid PRIMARY KEY,
+  slug text NOT NULL UNIQUE,
+  title text NOT NULL CHECK (length(title) BETWEEN 2 AND 160),
+  description text NOT NULL DEFAULT '',
+  duration_sec integer NOT NULL DEFAULT 600 CHECK (duration_sec BETWEEN 30 AND 86400),
+  passing_score numeric(5,2) NOT NULL DEFAULT 0 CHECK (passing_score BETWEEN 0 AND 100),
+  starts_at timestamptz,
+  ends_at timestamptz,
+  password_hash bytea,
+  max_attempts integer NOT NULL DEFAULT 1 CHECK (max_attempts BETWEEN 1 AND 20),
+  completion_message text NOT NULL DEFAULT 'تم تسليم إجاباتك بنجاح.',
+  published boolean NOT NULL DEFAULT false,
+  questions jsonb NOT NULL DEFAULT '[]'::jsonb CHECK (jsonb_typeof(questions) = 'array' AND jsonb_array_length(questions) <= 100),
+  created_by_role text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS studio_quizzes_published_idx ON studio_quizzes (published, starts_at, ends_at);
+
+CREATE TABLE IF NOT EXISTS studio_quiz_responses (
+  response_id uuid PRIMARY KEY,
+  quiz_id uuid NOT NULL REFERENCES studio_quizzes(quiz_id) ON DELETE CASCADE,
+  participant_hash bytea NOT NULL,
+  participant_name text NOT NULL CHECK (length(participant_name) BETWEEN 2 AND 100),
+  answers jsonb NOT NULL CHECK (jsonb_typeof(answers) = 'array'),
+  score numeric(7,2) NOT NULL CHECK (score BETWEEN 0 AND 100),
+  duration_sec integer NOT NULL CHECK (duration_sec >= 0),
+  completed_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS studio_responses_quiz_date_idx ON studio_quiz_responses (quiz_id, completed_at DESC);
+CREATE INDEX IF NOT EXISTS studio_responses_participant_idx ON studio_quiz_responses (quiz_id, participant_hash, completed_at DESC);
+
+CREATE TABLE IF NOT EXISTS studio_quiz_attempts (
+  attempt_id uuid PRIMARY KEY,
+  quiz_id uuid NOT NULL REFERENCES studio_quizzes(quiz_id) ON DELETE CASCADE,
+  token_hash text NOT NULL UNIQUE,
+  participant_hash bytea NOT NULL,
+  participant_name text NOT NULL CHECK (length(participant_name) BETWEEN 2 AND 100),
+  started_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  submitted_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS studio_quiz_attempts_participant_idx ON studio_quiz_attempts (quiz_id, participant_hash, started_at DESC);
+
+CREATE TABLE IF NOT EXISTS studio_quiz_participants (
+  quiz_id uuid NOT NULL REFERENCES studio_quizzes(quiz_id) ON DELETE CASCADE,
+  participant_hash bytea NOT NULL,
+  attempts_started integer NOT NULL DEFAULT 0 CHECK (attempts_started >= 0),
+  PRIMARY KEY (quiz_id, participant_hash)
+);
+
+CREATE TABLE IF NOT EXISTS studio_pdf_templates (
+  template_id uuid PRIMARY KEY,
+  title text NOT NULL CHECK (length(title) BETWEEN 2 AND 120),
+  document_type text NOT NULL CHECK (document_type IN ('certificate','results','grades','summary')),
+  prompt text NOT NULL DEFAULT '',
+  html_template text NOT NULL CHECK (length(html_template) <= 100000),
+  created_by_role text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS studio_ai_limits (
+  session_id uuid PRIMARY KEY REFERENCES studio_sessions(session_id) ON DELETE CASCADE,
+  window_started_at timestamptz NOT NULL DEFAULT now(),
+  request_count integer NOT NULL DEFAULT 0 CHECK (request_count >= 0)
+);
+
+ALTER TABLE studio_quiz_responses ALTER COLUMN score DROP NOT NULL;
+ALTER TABLE studio_quiz_responses ADD COLUMN IF NOT EXISTS review_status text NOT NULL DEFAULT 'submitted'
+  CHECK (review_status IN ('submitted','needs_review','graded'));

@@ -1,0 +1,3 @@
+import { db, json, method, sameOrigin, clearStudioCookie, safeError } from '../../lib/server.js';
+import { readCookie, digest } from '../../lib/studio-auth.js';
+export default async function handler(req,res){if(!method(req,res,'POST'))return;if(!sameOrigin(req))return json(res,403,{error:'origin_rejected'});try{const token=readCookie(req,'studio_session');if(token)await db()`UPDATE studio_sessions SET revoked_at=now() WHERE token_hash=decode(${digest(token)},'hex') AND revoked_at IS NULL`;clearStudioCookie(res);return json(res,200,{authenticated:false})}catch(error){return json(res,503,safeError(error))}}

@@ -33,12 +33,20 @@
   ],
   "rewrites": [
     {
+      "source": "/studio",
+      "destination": "/studio.html"
+    },
+    {
+      "source": "/quiz/:slug",
+      "destination": "/private-quiz.html?slug=:slug"
+    },
+    {
       "source": "/students",
       "destination": "/index.html"
     },
     {
       "source": "/admin",
-      "destination": "/index.html"
+      "destination": "/studio.html"
     }
   ],
   "buildCommand": null,

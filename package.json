@@ -13,6 +13,7 @@
   "dependencies": {
     "@neon/config": "^1.9.2",
     "@neon/env": "^1.6.3",
-    "@neondatabase/serverless": "1.2.0"
+    "@neondatabase/serverless": "1.2.0",
+    "qrcode": "^1.5.4"
   }
 }
