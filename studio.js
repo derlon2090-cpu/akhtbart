@@ -28,6 +28,8 @@ async function api(url, options = {}) {
 }
 const $ = (s) => document.querySelector(s),
   $$ = (s) => [...document.querySelectorAll(s)];
+const EXAM_ORIGIN = "https://www.ikhtibarati.com/exam/";
+const quizLink = (value) => (typeof value === "object" && value?.link ? value.link : EXAM_ORIGIN + encodeURIComponent(typeof value === "object" ? value.slug : value));
 async function init() {
   try {
     const { r, p } = await api("/api/studio/session");
@@ -56,13 +58,59 @@ function go(view) {
     overview: "نظرة عامة",
     codes: "أكواد الوصول",
     quizzes: "الاختبارات والروابط",
+    settings: "إعدادات الحساب",
     pdf: "استوديو PDF الذكي",
   }[view];
   if (view === "codes") void loadCodes();
   if (view === "quizzes") void loadQuizzes();
+  if (view === "settings") void loadProfile();
   if (view === "pdf") void loadTemplates();
 }
 $$("[data-view]").forEach((b) => (b.onclick = () => go(b.dataset.view)));
+const profileSlug = (value) =>
+  [
+    ...String(value || "")
+      .normalize("NFKC")
+      .toLocaleLowerCase("ar")
+      .trim()
+      .replace(/[\s_]+/gu, "-")
+      .replace(/[^\p{L}\p{N}-]+/gu, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, ""),
+  ]
+    .slice(0, 28)
+    .join("");
+function updateProfilePreview() {
+  const prefix = profileSlug($("#profileDisplayName").value),
+    sample = "6f91c2e84d7a4b5f912ea8c3d67014ab";
+  $("#profileLinkPreview").textContent = EXAM_ORIGIN + (prefix ? `${prefix}-` : "") + sample;
+}
+async function loadProfile() {
+  const feedback = $("#profileFeedback");
+  feedback.textContent = "جارٍ تحميل الإعدادات…";
+  const { r, p } = await api("/api/studio/profile");
+  if (!r.ok) return (feedback.textContent = "تعذّر تحميل إعدادات الحساب.");
+  $("#profileDisplayName").value = p.profile?.displayName || "";
+  updateProfilePreview();
+  feedback.textContent = "";
+}
+$("#profileDisplayName").addEventListener("input", updateProfilePreview);
+$("#profileForm").onsubmit = async (event) => {
+  event.preventDefault();
+  const button = $("#saveProfile"),
+    feedback = $("#profileFeedback");
+  button.disabled = true;
+  feedback.textContent = "جارٍ الحفظ…";
+  const { r, p } = await api("/api/studio/profile", {
+    method: "POST",
+    body: JSON.stringify({ displayName: $("#profileDisplayName").value }),
+  });
+  button.disabled = false;
+  if (!r.ok) return (feedback.textContent = p.error === "account_name_taken" ? "اسم الحساب مستخدم؛ اختر اسمًا آخر." : "تعذّر الحفظ؛ استخدم حروفًا أو أرقامًا واضحة.");
+  $("#profileDisplayName").value = p.profile.displayName || "";
+  updateProfilePreview();
+  feedback.textContent = "تم حفظ الهوية. ستُستخدم في روابط الاختبارات الجديدة ✓";
+};
 $$("[data-placeholder]").forEach(
   (b) =>
     (b.onclick = () => {
@@ -147,12 +195,12 @@ function renderActiveQuizLinks(source) {
   }
   const active = source.filter(quizIsActive).sort((a, b) => (a.endsAt ? new Date(a.endsAt).getTime() : Infinity) - (b.endsAt ? new Date(b.endsAt).getTime() : Infinity));
   count.textContent = active.length ? `${active.length} ${active.length === 1 ? "اختبار نشط" : "اختبارات نشطة"}` : "لا توجد روابط نشطة";
-  root.innerHTML = active.map((q) => `<article class="active-link-card ${["manager", "superadmin"].includes(role) ? "is-clickable" : ""}"><div class="active-link-top">${["manager", "superadmin"].includes(role) ? `<button class="active-link-title active-link-title-button open-quiz-stats" type="button" data-id="${esc(q.quizId)}">${esc(q.title)}</button>` : `<b class="active-link-title">${esc(q.title)}</b>`}<span class="live-badge">متاح الآن</span></div><div class="active-link-meta"><span>${q.questionCount} سؤال</span><span>${Math.ceil(q.durationSec / 60)} دقيقة</span><span>${esc(activeQuizAvailability(q))}</span></div><div class="active-link-url" title="${esc(location.origin + "/quiz/" + q.slug)}"><span aria-hidden="true">↗</span><code>${esc(location.origin + "/quiz/" + q.slug)}</code></div><div class="active-link-actions">${["manager", "superadmin"].includes(role) ? `<button class="btn stats-link-btn open-quiz-stats" type="button" data-id="${esc(q.quizId)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2"/></svg>الإحصائيات</button>` : `<a class="btn" href="/quiz/${esc(q.slug)}" target="_blank" rel="noopener">فتح الاختبار</a>`}<a class="btn secondary" href="/quiz/${esc(q.slug)}" target="_blank" rel="noopener">فتح</a><button class="btn secondary copy-active-link" type="button" data-slug="${esc(q.slug)}">نسخ</button></div></article>`).join("") || '<div class="active-links-empty"><b>لا توجد اختبارات متاحة الآن</b><br><span>ستظهر هنا تلقائيًا عند نشر اختبار وبدء موعده.</span></div>';
+  root.innerHTML = active.map((q) => `<article class="active-link-card ${["manager", "superadmin"].includes(role) ? "is-clickable" : ""}"><div class="active-link-top">${["manager", "superadmin"].includes(role) ? `<button class="active-link-title active-link-title-button open-quiz-stats" type="button" data-id="${esc(q.quizId)}">${esc(q.title)}</button>` : `<b class="active-link-title">${esc(q.title)}</b>`}<span class="live-badge">متاح الآن</span></div><div class="active-link-meta"><span>${q.questionCount} سؤال</span><span>${Math.ceil(q.durationSec / 60)} دقيقة</span><span>${esc(activeQuizAvailability(q))}</span></div><div class="active-link-url" title="${esc(quizLink(q))}"><span aria-hidden="true">↗</span><code>${esc(quizLink(q))}</code></div><div class="active-link-actions">${["manager", "superadmin"].includes(role) ? `<button class="btn stats-link-btn open-quiz-stats" type="button" data-id="${esc(q.quizId)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2"/></svg>الإحصائيات</button>` : `<a class="btn" href="${esc(quizLink(q))}" target="_blank" rel="noopener">فتح الاختبار</a>`}<a class="btn secondary" href="${esc(quizLink(q))}" target="_blank" rel="noopener">فتح</a><button class="btn secondary copy-active-link" type="button" data-slug="${esc(q.slug)}">نسخ</button></div></article>`).join("") || '<div class="active-links-empty"><b>لا توجد اختبارات متاحة الآن</b><br><span>ستظهر هنا تلقائيًا عند نشر اختبار وبدء موعده.</span></div>';
   root.querySelectorAll(".copy-active-link").forEach(
     (button) =>
       (button.onclick = async () => {
         try {
-          await navigator.clipboard.writeText(location.origin + "/quiz/" + button.dataset.slug);
+          await navigator.clipboard.writeText(quizLink(button.dataset.slug));
           button.textContent = "تم النسخ ✓";
           button.classList.add("is-copied");
           setTimeout(() => {
@@ -473,8 +521,8 @@ async function loadQuizzes() {
     const { r, p } = await api("/api/studio/quizzes");
     if (!r.ok) throw Error();
     quizCatalog = p.quizzes;
-    $("#quizList").innerHTML = quizCatalog.map((q) => `<article class="card card-pad"><b>${esc(q.title)}</b><p class="muted">${q.questionCount} سؤال · ${Math.ceil(q.durationSec / 60)} دقيقة · ${q.published ? "منشور" : "مسودة"}</p><div class="actions"><code dir="ltr">/quiz/${esc(q.slug)}</code><button class="btn secondary copyquiz" data-slug="${esc(q.slug)}">نسخ الرابط</button><button class="btn secondary showqr" data-slug="${esc(q.slug)}">رمز QR</button><a class="btn secondary" href="/quiz/${esc(q.slug)}" target="_blank" rel="noopener">معاينة</a>${role === "viewer" ? "" : `<button class="btn secondary editquiz" data-id="${esc(q.quizId)}">تعديل</button><button class="btn secondary togglequiz" data-id="${esc(q.quizId)}" data-published="${!q.published}">${q.published ? "إيقاف النشر" : "نشر"}</button>`}${["manager", "superadmin"].includes(role) ? `<button class="btn secondary responses" data-id="${esc(q.quizId)}">النتائج والتصحيح</button>` : ""}</div><div id="qr-${esc(q.quizId)}" class="quiz-qr hidden"></div><div id="review-${esc(q.quizId)}"></div></article>`).join("") || '<div class="card empty">لم تنشئ اختبارات بعد.</div>';
-    $$(".copyquiz").forEach((x) => (x.onclick = () => navigator.clipboard.writeText(location.origin + "/quiz/" + x.dataset.slug)));
+    $("#quizList").innerHTML = quizCatalog.map((q) => `<article class="card card-pad"><b>${esc(q.title)}</b><p class="muted">${q.questionCount} سؤال · ${Math.ceil(q.durationSec / 60)} دقيقة · ${q.published ? "منشور" : "مسودة"}</p><div class="actions"><code dir="ltr">${esc(quizLink(q))}</code><button class="btn secondary copyquiz" data-slug="${esc(q.slug)}">نسخ الرابط</button><button class="btn secondary showqr" data-slug="${esc(q.slug)}">رمز QR</button><a class="btn secondary" href="${esc(quizLink(q))}" target="_blank" rel="noopener">معاينة</a>${role === "viewer" ? "" : `<button class="btn secondary editquiz" data-id="${esc(q.quizId)}">تعديل</button><button class="btn secondary togglequiz" data-id="${esc(q.quizId)}" data-published="${!q.published}">${q.published ? "إيقاف النشر" : "نشر"}</button>`}${["manager", "superadmin"].includes(role) ? `<button class="btn secondary responses" data-id="${esc(q.quizId)}">النتائج والتصحيح</button>` : ""}</div><div id="qr-${esc(q.quizId)}" class="quiz-qr hidden"></div><div id="review-${esc(q.quizId)}"></div></article>`).join("") || '<div class="card empty">لم تنشئ اختبارات بعد.</div>';
+    $$(".copyquiz").forEach((x) => (x.onclick = () => navigator.clipboard.writeText(quizLink(x.dataset.slug))));
     $$(".editquiz").forEach((x) => (x.onclick = () => editQuiz(x.dataset.id)));
     $$(".togglequiz").forEach((x) => (x.onclick = () => toggleQuiz(x.dataset.id, x.dataset.published === "true")));
     $$(".responses").forEach((x) => (x.onclick = () => loadResponses(x.dataset.id)));

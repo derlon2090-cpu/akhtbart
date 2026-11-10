@@ -68,7 +68,7 @@ function clearState() {
   } catch {}
 }
 async function load() {
-  if (!/^[A-Za-z0-9_-]{24,80}$/.test(slug))
+  if (!/^[\p{L}\p{N}_-]{24,80}$/u.test(slug))
     return showError("رابط الاختبار غير صالح.");
   try {
     const r = await fetch("/api/public/quiz?slug=" + encodeURIComponent(slug), {

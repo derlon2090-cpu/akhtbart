@@ -4,6 +4,7 @@ import studio_generate_template from "../lib/platform-routes/studio/generate-tem
 import studio_login from "../lib/platform-routes/studio/login.js";
 import studio_logout from "../lib/platform-routes/studio/logout.js";
 import studio_overview from "../lib/platform-routes/studio/overview.js";
+import studio_profile from "../lib/platform-routes/studio/profile.js";
 import studio_organize_questions from "../lib/platform-routes/studio/organize-questions.js";
 import studio_document_questions from "../lib/platform-routes/studio/document-questions.js";
 import studio_distribute_scores from "../lib/platform-routes/studio/distribute-scores.js";
@@ -28,6 +29,7 @@ const routes = {
   "studio/login": studio_login,
   "studio/logout": studio_logout,
   "studio/overview": studio_overview,
+  "studio/profile": studio_profile,
   "studio/organize-questions": studio_organize_questions,
   "studio/document-questions": studio_document_questions,
   "studio/distribute-scores": studio_distribute_scores,

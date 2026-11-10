@@ -68,6 +68,10 @@
       "destination": "/private-quiz.html?slug=:slug"
     },
     {
+      "source": "/exam/:slug",
+      "destination": "/private-quiz.html?slug=:slug"
+    },
+    {
       "source": "/verify/:code",
       "destination": "/verify.html?code=:code"
     },

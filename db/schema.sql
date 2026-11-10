@@ -63,6 +63,13 @@ CREATE TABLE IF NOT EXISTS studio_access_codes (
 );
 CREATE INDEX IF NOT EXISTS studio_access_codes_status_idx ON studio_access_codes (revoked_at, expires_at, created_at DESC);
 
+CREATE TABLE IF NOT EXISTS studio_profiles (
+  profile_key text PRIMARY KEY,
+  display_name text NOT NULL DEFAULT '' CHECK (length(display_name) <= 80),
+  account_slug text UNIQUE CHECK (account_slug IS NULL OR length(account_slug) BETWEEN 2 AND 28),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS studio_sessions (
   session_id uuid PRIMARY KEY,
   token_hash bytea NOT NULL UNIQUE,
