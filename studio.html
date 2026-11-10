@@ -2370,7 +2370,7 @@
           </div>
           <div class="card card-pad" style="max-width: 760px; margin-top: 18px">
             <form id="profileForm">
-              <div class="field"><label for="profileDisplayName">اسم الحساب في الرابط (اختياري)</label><input class="input" id="profileDisplayName" maxlength="80" autocomplete="off" placeholder="مثال: ibrahim أو إبراهيم معدلي"><small class="muted">تُحوّل المسافات تلقائيًا إلى شرطات. يمكنك تركه فارغًا ليظهر المعرّف فقط.</small></div>
+              <div class="field"><label for="profileDisplayName">اسم الحساب بالإنجليزية (اختياري)</label><input class="input" id="profileDisplayName" dir="ltr" maxlength="16" pattern="[A-Za-z0-9_-]{2,16}" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="مثال: ibrahim"><small class="muted">حروف إنجليزية وأرقام وشرطة فقط، من خانتين إلى 16 خانة.</small></div>
               <div class="callout" style="margin: 18px 0"><b>معاينة الرابط القادم</b><code id="profileLinkPreview" dir="ltr" style="display:block;margin-top:9px;overflow-wrap:anywhere;color:var(--accent)">https://www.ikhtibarati.com/exam/...</code><small class="muted">المقطع الأخير مثال للمعرّف الفريد؛ كل اختبار يحصل على معرف مختلف تلقائيًا.</small></div>
               <div class="actions"><button class="btn" id="saveProfile" type="submit">حفظ إعدادات الرابط</button><span id="profileFeedback" class="muted" role="status"></span></div>
             </form>

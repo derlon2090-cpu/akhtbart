@@ -107,7 +107,12 @@ ALTER TABLE studio_quizzes ADD COLUMN IF NOT EXISTS owner_profile_key text REFER
 CREATE UNIQUE INDEX IF NOT EXISTS studio_quizzes_public_slug_idx ON studio_quizzes (public_slug) WHERE public_slug IS NOT NULL;
 UPDATE studio_quizzes SET public_slug=slug WHERE public_slug IS NULL;
 UPDATE studio_quizzes q SET owner_profile_key='superadmin' WHERE q.owner_profile_key IS NULL AND q.created_by_role='superadmin' AND EXISTS (SELECT 1 FROM studio_profiles p WHERE p.profile_key='superadmin');
-UPDATE studio_quizzes q SET public_slug=p.account_slug||'-'||replace(q.quiz_id::text,'-','') FROM studio_profiles p WHERE q.owner_profile_key=p.profile_key AND p.account_slug IS NOT NULL;
+CREATE TABLE IF NOT EXISTS studio_quiz_aliases (
+  slug text PRIMARY KEY,
+  quiz_id uuid NOT NULL REFERENCES studio_quizzes(quiz_id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS studio_quiz_aliases_quiz_idx ON studio_quiz_aliases (quiz_id);
 
 CREATE TABLE IF NOT EXISTS studio_quiz_responses (
   response_id uuid PRIMARY KEY,

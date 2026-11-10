@@ -67,22 +67,24 @@ function go(view) {
   if (view === "pdf") void loadTemplates();
 }
 $$("[data-view]").forEach((b) => (b.onclick = () => go(b.dataset.view)));
-const profileSlug = (value) =>
-  [
-    ...String(value || "")
-      .normalize("NFKC")
-      .toLocaleLowerCase("ar")
-      .trim()
-      .replace(/[\s_]+/gu, "-")
-      .replace(/[^\p{L}\p{N}-]+/gu, "")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, ""),
-  ]
-    .slice(0, 28)
-    .join("");
+const profileSlug = (value) => {
+  const normalized = String(value || "")
+    .normalize("NFKC")
+    .toLocaleLowerCase("ar")
+    .trim()
+    .replace(/[\s_]+/gu, "-")
+    .replace(/[^\p{L}\p{N}-]+/gu, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  if (/^[a-z0-9-]+$/.test(normalized)) return normalized.slice(0, 16);
+  const titles = new Set(["المعلم", "معلم", "الأستاذ", "استاذ", "الدكتور", "دكتور"]),
+    word = normalized.split("-").find((item) => item && !titles.has(item)) || "user",
+    common = { إبراهيم: "ibrahim", ابراهيم: "ibrahim", محمد: "mohammed", أحمد: "ahmad", احمد: "ahmad", عبدالله: "abdullah" };
+  return common[word] || "user";
+};
 function updateProfilePreview() {
   const prefix = profileSlug($("#profileDisplayName").value),
-    sample = "6f91c2e84d7a4b5f912ea8c3d67014ab";
+    sample = "X7k2P9qL0A";
   $("#profileLinkPreview").textContent = EXAM_ORIGIN + (prefix ? `${prefix}-` : "") + sample;
 }
 async function loadProfile() {
@@ -94,7 +96,10 @@ async function loadProfile() {
   updateProfilePreview();
   feedback.textContent = "";
 }
-$("#profileDisplayName").addEventListener("input", updateProfilePreview);
+$("#profileDisplayName").addEventListener("input", (event) => {
+  event.currentTarget.value = event.currentTarget.value.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 16);
+  updateProfilePreview();
+});
 $("#profileForm").onsubmit = async (event) => {
   event.preventDefault();
   const button = $("#saveProfile"),
@@ -106,7 +111,7 @@ $("#profileForm").onsubmit = async (event) => {
     body: JSON.stringify({ displayName: $("#profileDisplayName").value }),
   });
   button.disabled = false;
-  if (!r.ok) return (feedback.textContent = p.error === "account_name_taken" ? "اسم الحساب مستخدم؛ اختر اسمًا آخر." : "تعذّر الحفظ؛ استخدم حروفًا أو أرقامًا واضحة.");
+  if (!r.ok) return (feedback.textContent = p.error === "account_name_taken" ? "اسم الحساب مستخدم؛ اختر اسمًا آخر." : "اكتب اسمًا إنجليزيًا من خانتين إلى 16 خانة.");
   $("#profileDisplayName").value = p.profile.displayName || "";
   updateProfilePreview();
   feedback.textContent = `تم حفظ الهوية وتحديث ${p.updatedLinks || 0} من روابط اختباراتك ✓`;
