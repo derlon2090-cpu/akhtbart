@@ -8,5 +8,6 @@ npm-debug.log*
 **/.gradle/
 **/build/
 local.properties
+tmp/
 .vercel
 .env*

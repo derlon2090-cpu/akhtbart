@@ -1,8 +1,11 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
+import { buildSync } from 'esbuild';
 
-const javascriptFiles = ['app.js', 'question-report.js', 'studio.js', 'private-quiz.js'];
+buildSync({entryPoints:['src/realtime-results.js'],bundle:true,minify:true,format:'iife',outfile:'realtime-results.js',platform:'browser',target:['es2020']});
+
+const javascriptFiles = ['app.js', 'question-report.js', 'studio.js', 'studio-enhancements.js', 'private-quiz.js', 'verify.js', 'realtime-results.js'];
 for (const directory of ['api', 'lib']) {
   const visit = path => {
     for (const entry of readdirSync(path)) {

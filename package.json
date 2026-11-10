@@ -8,12 +8,19 @@
   "scripts": {
     "build": "node scripts/build.js",
     "db:migrate": "node scripts/migrate-db.js",
-    "smoke:api": "node scripts/smoke-api.js"
+    "smoke:api": "node scripts/smoke-api.js",
+    "test:ai": "node scripts/test-ai-question-service.js",
+    "test:platform": "node scripts/test-platform-features.js"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^1.1.0",
     "@neon/config": "^1.9.2",
     "@neon/env": "^1.6.3",
+    "@neon/realtime": "^0.2.1",
     "@neondatabase/serverless": "1.2.0",
+    "esbuild": "^0.28.2",
+    "ollama": "^0.6.4",
+    "pdfjs-dist": "^4.8.69",
     "qrcode": "^1.5.4"
   }
 }

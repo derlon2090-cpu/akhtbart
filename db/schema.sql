@@ -87,6 +87,8 @@ CREATE TABLE IF NOT EXISTS studio_quizzes (
   max_attempts integer NOT NULL DEFAULT 1 CHECK (max_attempts BETWEEN 1 AND 20),
   completion_message text NOT NULL DEFAULT 'تم تسليم إجاباتك بنجاح.',
   published boolean NOT NULL DEFAULT false,
+  integrity_settings jsonb NOT NULL DEFAULT '{"tabSwitchLimit":0,"disableCopy":true,"shuffleQuestions":true,"shuffleOptions":true,"perQuestionSec":0}'::jsonb CHECK (jsonb_typeof(integrity_settings) = 'object'),
+  registration_fields jsonb NOT NULL DEFAULT '[{"id":"name","label":"اسم الطالب الثلاثي","type":"text","required":true},{"id":"email","label":"البريد الإلكتروني","type":"email","required":true},{"id":"honor","label":"أقر أن البيانات المدخلة تخصني وأنني سأجيب بنفسي","type":"checkbox","required":true}]'::jsonb CHECK (jsonb_typeof(registration_fields) = 'array' AND jsonb_array_length(registration_fields) <= 12),
   questions jsonb NOT NULL DEFAULT '[]'::jsonb CHECK (jsonb_typeof(questions) = 'array' AND jsonb_array_length(questions) <= 100),
   created_by_role text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -99,6 +101,11 @@ CREATE TABLE IF NOT EXISTS studio_quiz_responses (
   quiz_id uuid NOT NULL REFERENCES studio_quizzes(quiz_id) ON DELETE CASCADE,
   participant_hash bytea NOT NULL,
   participant_name text NOT NULL CHECK (length(participant_name) BETWEEN 2 AND 100),
+  participant_data jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(participant_data) = 'object'),
+  integrity_summary jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(integrity_summary) = 'object'),
+  ai_feedback jsonb,
+  verification_code text UNIQUE,
+  issued_at timestamptz,
   answers jsonb NOT NULL CHECK (jsonb_typeof(answers) = 'array'),
   score numeric(7,2) NOT NULL CHECK (score BETWEEN 0 AND 100),
   duration_sec integer NOT NULL CHECK (duration_sec >= 0),
@@ -113,6 +120,14 @@ CREATE TABLE IF NOT EXISTS studio_quiz_attempts (
   token_hash text NOT NULL UNIQUE,
   participant_hash bytea NOT NULL,
   participant_name text NOT NULL CHECK (length(participant_name) BETWEEN 2 AND 100),
+  participant_data jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(participant_data) = 'object'),
+  question_order jsonb NOT NULL DEFAULT '[]'::jsonb CHECK (jsonb_typeof(question_order) = 'array'),
+  option_orders jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(option_orders) = 'object'),
+  integrity_events jsonb NOT NULL DEFAULT '[]'::jsonb CHECK (jsonb_typeof(integrity_events) = 'array'),
+  violation_count integer NOT NULL DEFAULT 0 CHECK (violation_count >= 0),
+  locked_at timestamptz,
+  current_question integer NOT NULL DEFAULT 0 CHECK (current_question >= 0),
+  last_activity_at timestamptz NOT NULL DEFAULT now(),
   started_at timestamptz NOT NULL DEFAULT now(),
   expires_at timestamptz NOT NULL,
   submitted_at timestamptz
@@ -144,5 +159,21 @@ CREATE TABLE IF NOT EXISTS studio_ai_limits (
 );
 
 ALTER TABLE studio_quiz_responses ALTER COLUMN score DROP NOT NULL;
+ALTER TABLE studio_quizzes ADD COLUMN IF NOT EXISTS registration_fields jsonb NOT NULL DEFAULT '[{"id":"name","label":"اسم الطالب الثلاثي","type":"text","required":true},{"id":"email","label":"البريد الإلكتروني","type":"email","required":true},{"id":"honor","label":"أقر أن البيانات المدخلة تخصني وأنني سأجيب بنفسي","type":"checkbox","required":true}]'::jsonb;
+ALTER TABLE studio_quizzes ADD COLUMN IF NOT EXISTS integrity_settings jsonb NOT NULL DEFAULT '{"tabSwitchLimit":0,"disableCopy":true,"shuffleQuestions":true,"shuffleOptions":true,"perQuestionSec":0}'::jsonb;
+ALTER TABLE studio_quiz_attempts ADD COLUMN IF NOT EXISTS participant_data jsonb NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE studio_quiz_attempts ADD COLUMN IF NOT EXISTS question_order jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE studio_quiz_attempts ADD COLUMN IF NOT EXISTS option_orders jsonb NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE studio_quiz_attempts ADD COLUMN IF NOT EXISTS integrity_events jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE studio_quiz_attempts ADD COLUMN IF NOT EXISTS violation_count integer NOT NULL DEFAULT 0;
+ALTER TABLE studio_quiz_attempts ADD COLUMN IF NOT EXISTS locked_at timestamptz;
+ALTER TABLE studio_quiz_attempts ADD COLUMN IF NOT EXISTS current_question integer NOT NULL DEFAULT 0;
+ALTER TABLE studio_quiz_attempts ADD COLUMN IF NOT EXISTS last_activity_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE studio_quiz_responses ADD COLUMN IF NOT EXISTS participant_data jsonb NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE studio_quiz_responses ADD COLUMN IF NOT EXISTS integrity_summary jsonb NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE studio_quiz_responses ADD COLUMN IF NOT EXISTS ai_feedback jsonb;
+ALTER TABLE studio_quiz_responses ADD COLUMN IF NOT EXISTS verification_code text;
+CREATE UNIQUE INDEX IF NOT EXISTS studio_responses_verification_idx ON studio_quiz_responses (verification_code) WHERE verification_code IS NOT NULL;
+ALTER TABLE studio_quiz_responses ADD COLUMN IF NOT EXISTS issued_at timestamptz;
 ALTER TABLE studio_quiz_responses ADD COLUMN IF NOT EXISTS review_status text NOT NULL DEFAULT 'submitted'
   CHECK (review_status IN ('submitted','needs_review','graded'));
