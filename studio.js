@@ -109,7 +109,8 @@ $("#profileForm").onsubmit = async (event) => {
   if (!r.ok) return (feedback.textContent = p.error === "account_name_taken" ? "اسم الحساب مستخدم؛ اختر اسمًا آخر." : "تعذّر الحفظ؛ استخدم حروفًا أو أرقامًا واضحة.");
   $("#profileDisplayName").value = p.profile.displayName || "";
   updateProfilePreview();
-  feedback.textContent = "تم حفظ الهوية. ستُستخدم في روابط الاختبارات الجديدة ✓";
+  feedback.textContent = `تم حفظ الهوية وتحديث ${p.updatedLinks || 0} من روابط اختباراتك ✓`;
+  await loadQuizzes();
 };
 $$("[data-placeholder]").forEach(
   (b) =>
