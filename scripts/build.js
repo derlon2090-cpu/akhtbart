@@ -1,31 +1,42 @@
-import { existsSync, readdirSync, statSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
-import { join } from 'node:path';
-import { buildSync } from 'esbuild';
+import { existsSync, readdirSync, statSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { join } from "node:path";
+import { buildSync } from "esbuild";
 
-buildSync({entryPoints:['src/realtime-results.js'],bundle:true,minify:true,format:'iife',outfile:'realtime-results.js',platform:'browser',target:['es2020']});
+buildSync({
+  entryPoints: ["src/realtime-results.js"],
+  bundle: true,
+  minify: true,
+  format: "iife",
+  outfile: "realtime-results.js",
+  platform: "browser",
+  target: ["es2020"],
+});
 
-const javascriptFiles = ['app.js', 'question-report.js', 'studio.js', 'studio-enhancements.js', 'private-quiz.js', 'verify.js', 'realtime-results.js'];
-for (const directory of ['api', 'lib']) {
-  const visit = path => {
+const javascriptFiles = ["app.js", "question-report.js", "studio.js", "studio-enhancements.js", "private-quiz.js", "verify.js", "realtime-results.js"];
+for (const directory of ["api", "lib"]) {
+  const visit = (path) => {
     for (const entry of readdirSync(path)) {
       const file = join(path, entry);
       if (statSync(file).isDirectory()) visit(file);
-      else if (file.endsWith('.js')) javascriptFiles.push(file);
+      else if (file.endsWith(".js")) javascriptFiles.push(file);
     }
   };
   visit(directory);
 }
 
 for (const file of javascriptFiles) {
-  const result = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
+  const result = spawnSync(process.execPath, ["--check", file], {
+    encoding: "utf8",
+  });
   if (result.status !== 0) {
     process.stderr.write(result.stderr || result.stdout);
     process.exit(result.status || 1);
   }
 }
 
-if (!existsSync('images/ministry-of-education.png')) throw new Error('Expected the official Ministry of Education logo asset.');
-const questionImages = readdirSync('images/questions').filter(file => file.endsWith('.svg'));
-if (questionImages.length < 10) throw new Error('Expected at least 10 chemistry question illustrations.');
+if (!existsSync("images/ministry-of-education.png")) throw new Error("Expected the official Ministry of Education logo asset.");
+if (!existsSync("images/ikhtibarati-logo.png")) throw new Error("Expected the Ikhtibarati logo asset.");
+const questionImages = readdirSync("images/questions").filter((file) => file.endsWith(".svg"));
+if (questionImages.length < 10) throw new Error("Expected at least 10 chemistry question illustrations.");
 console.log(`Build checks passed: ${javascriptFiles.length} JavaScript files and ${questionImages.length} question illustrations.`);

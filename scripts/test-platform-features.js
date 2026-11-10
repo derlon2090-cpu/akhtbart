@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { parsePageRanges,smartChunks } from '../lib/documents/pdf-ingestion.js';
 import { gradeResponse } from '../lib/ai/grading-service.js';
 import { validIntegritySettings,validSavedQuizQuestion } from '../lib/studio-auth.js';
-import { weightedScore } from '../lib/quiz-scoring.js';
+import { scoreToPoints, totalQuizPoints, weightedScore } from '../lib/quiz-scoring.js';
 import { normalizeScorePlan } from '../lib/ai/score-distribution-service.js';
 
 assert.deepEqual(parsePageRanges('1-3, 7, 9-10',12),[1,2,3,7,9,10]);
@@ -16,6 +16,8 @@ assert.equal(validSavedQuizQuestion(documentQuestion),true);
 assert.equal(validSavedQuizQuestion({...documentQuestion,aiMeta:{...documentQuestion.aiMeta,reviewed:false}}),false);
 assert.equal(validSavedQuizQuestion({...documentQuestion,points:0}),false);
 assert.equal(weightedScore([{points:3},{points:1}],[1,0]),75);
+assert.equal(totalQuizPoints([{points:12},{points:8}]),20);
+assert.equal(scoreToPoints(75,[{points:12},{points:8}]),15);
 const scorePlan=normalizeScorePlan({allocations:[{index:0,points:3,reason:'صعب'},{index:1,points:1,reason:'سهل'}]},2,100);assert.equal(scorePlan.allocations.reduce((sum,item)=>sum+item.points,0),100);assert.equal(scorePlan.allocations[0].points,75);
 const grade=await gradeResponse({questions:[{type:'single',prompt:'س1',options:['أ','ب'],correct:[1],tags:['المفهوم الأول']},{type:'boolean',prompt:'س2',correct:true,tags:['المفهوم الثاني']}],answers:[[1],false]});
 assert.equal(grade.score,50);assert.equal(grade.details[0].scoreRatio,1);assert.equal(grade.details[1].scoreRatio,0);assert.ok(grade.learningGaps.includes('المفهوم الثاني'));

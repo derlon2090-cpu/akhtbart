@@ -1,27 +1,49 @@
 // Official Ministry of Education logo asset downloaded from the ministry visual identity library.
-function printQuestionReport(){
-  if(!questionDraft?.length||!questionDraft.every(validQuestion)){
-    setQuestionFeedback('أكمل نص الأسئلة وخياراتها أولًا لإصدار التقرير.',true);return
+function printQuestionReport() {
+  if (!questionDraft?.length || !questionDraft.every(validQuestion)) {
+    setQuestionFeedback("أكمل نص الأسئلة وخياراتها أولًا لإصدار التقرير.", true);
+    return;
   }
-  const win=window.open('','_blank');
-  if(!win){setQuestionFeedback('اسمح بالنوافذ المنبثقة لإصدار تقرير الأسئلة.',true);return}
-  const letters=['أ','ب','ج','د'];
-  const pages=[];
-  for(let i=0;i<questionDraft.length;i+=4)pages.push(questionDraft.slice(i,i+4));
-  const questionPages=pages.map((group,pageIndex)=>'<section class="page question-page"><header class="page-heading"><div><small>ثانوية الشقيري · مسابقة عباقرة الكيمياء والتقنية</small><h1>أسئلة المسابقة</h1></div><span class="page-count">صفحة الأسئلة '+(pageIndex+1)+' من '+pages.length+'</span></header><div class="question-list">'+group.map((q,offset)=>{
-    const number=pageIndex*4+offset+1,visual=questionVisual(q);
-    return '<article class="question"><div class="question-visual"><img src="'+location.origin+'/images/questions/'+encodeURIComponent(visual.key)+'.svg" alt="'+esc(visual.alt)+'"><span>رسم توضيحي</span></div><div class="question-content"><div class="question-head"><b>السؤال '+String(number).padStart(2,'0')+'</b><span>اختيار من متعدد</span></div><h2>'+esc(q.q)+'</h2><div class="options">'+q.a.map((option,j)=>'<div class="option '+(j===q.c?'correct':'')+'"><b>'+letters[j]+'</b><span>'+esc(option)+'</span>'+(j===q.c?'<small>الإجابة الصحيحة</small>':'')+'</div>').join('')+'</div></div></article>'
-  }).join('')+'</div><footer class="page-foot"><span>مسابقة عباقرة الكيمياء والتقنية</span><span>صفحة الأسئلة '+(pageIndex+1)+' من '+pages.length+'</span></footer></section>').join('');
-  const rules=[
-    ['١','الاسم والصف','اكتب اسمك الثلاثي وحدد الصف الدراسي والشعبة بدقة.'],
-    ['٢','البريد المدرسي','أدخل بريد منصة مدرستي المنتهي بالنطاق <b dir="ltr">@jzb.moe.gov.sa</b>.'],
-    ['٣','الدقة والوقت','أجب بأعلى دقة ممكنة وفي أقل وقت. مدة الاختبار عشر دقائق.'],
-    ['٤','توثيق النتيجة','بعد التسليم، التقط صورة للشاشة تظهر الدرجة وزمن الحل.'],
-    ['٥','اعتماد المشاركة','أرسل صورة النتيجة للجهة المنظمة لتوثيق المشاركة واعتمادها.'],
-    ['٦','المحاولة','لكل طالب محاولة واحدة فقط، وتُعتمد النتيجة المسجلة في النظام.']
+  const win = window.open("", "_blank");
+  if (!win) {
+    setQuestionFeedback("اسمح بالنوافذ المنبثقة لإصدار تقرير الأسئلة.", true);
+    return;
+  }
+  const letters = ["أ", "ب", "ج", "د"];
+  const pages = [];
+  for (let i = 0; i < questionDraft.length; i += 4) pages.push(questionDraft.slice(i, i + 4));
+  const questionPages = pages
+    .map(
+      (group, pageIndex) =>
+        '<section class="page question-page"><header class="page-heading"><div><small>ثانوية الشقيري · مسابقة عباقرة الكيمياء والتقنية</small><h1>أسئلة المسابقة</h1></div><span class="page-count">صفحة الأسئلة ' +
+        (pageIndex + 1) +
+        " من " +
+        pages.length +
+        '</span></header><div class="question-list">' +
+        group
+          .map((q, offset) => {
+            const number = pageIndex * 4 + offset + 1,
+              visual = questionVisual(q);
+            return '<article class="question"><div class="question-visual"><img src="' + location.origin + "/images/questions/" + encodeURIComponent(visual.key) + '.svg" alt="' + esc(visual.alt) + '"><span>رسم توضيحي</span></div><div class="question-content"><div class="question-head"><b>السؤال ' + String(number).padStart(2, "0") + "</b><span>اختيار من متعدد</span></div><h2>" + esc(q.q) + '</h2><div class="options">' + q.a.map((option, j) => '<div class="option ' + (j === q.c ? "correct" : "") + '"><b>' + letters[j] + "</b><span>" + esc(option) + "</span>" + (j === q.c ? "<small>الإجابة الصحيحة</small>" : "") + "</div>").join("") + "</div></div></article>";
+          })
+          .join("") +
+        '</div><footer class="page-foot"><span>مسابقة عباقرة الكيمياء والتقنية</span><span>صفحة الأسئلة ' +
+        (pageIndex + 1) +
+        " من " +
+        pages.length +
+        "</span></footer></section>",
+    )
+    .join("");
+  const rules = [
+    ["١", "الاسم والصف", "اكتب اسمك الثلاثي وحدد الصف الدراسي والشعبة بدقة."],
+    ["٢", "البريد المدرسي", 'أدخل بريد منصة مدرستي المنتهي بالنطاق <b dir="ltr">@jzb.moe.gov.sa</b>.'],
+    ["٣", "الدقة والوقت", "أجب بأعلى دقة ممكنة وفي أقل وقت. مدة الاختبار عشر دقائق."],
+    ["٤", "توثيق النتيجة", "بعد التسليم، التقط صورة للشاشة تظهر الدرجة وزمن الحل."],
+    ["٥", "اعتماد المشاركة", "أرسل صورة النتيجة للجهة المنظمة لتوثيق المشاركة واعتمادها."],
+    ["٦", "المحاولة", "لكل طالب محاولة واحدة فقط، وتُعتمد النتيجة المسجلة في النظام."],
   ];
-  const rulesHtml=rules.map(r=>'<article class="rule-card"><span class="rule-number">'+r[0]+'</span><div><b>'+r[1]+'</b><p>'+r[2]+'</p></div></article>').join('');
-  const styles=`
+  const rulesHtml = rules.map((r) => '<article class="rule-card"><span class="rule-number">' + r[0] + "</span><div><b>" + r[1] + "</b><p>" + r[2] + "</p></div></article>").join("");
+  const styles = `
 @page{size:A4 portrait;margin:10mm}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;direction:rtl;color:#17362f;font:12px/1.65 Tahoma,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -46,11 +68,12 @@ body{background:#eaf1ef}
 @media screen{body{padding:8px}.page{box-shadow:0 3px 20px #17362f14}.page:last-child{margin-bottom:8mm}}
 @media print{html,body{background:#fff}.page{width:auto;min-height:277mm;margin:0;padding:8mm 9mm;box-shadow:none}.cover{height:277mm;min-height:277mm;max-height:277mm;padding:8mm;display:flex;flex-direction:column;justify-content:space-between;break-inside:avoid;overflow:hidden}.cover-main{padding:7mm 3mm 4mm}.chem-scene{height:44mm;margin:5mm auto 3mm}.trophy{height:37mm}.trophy:nth-child(2){height:44mm}.trophy:nth-child(3){height:33mm}.cover-bottom{padding:4mm 4mm 11mm}.qr{grid-template-columns:20mm auto;gap:3mm;padding:2mm}.qr img{width:20mm;height:20mm}.question-page{padding:7mm 8mm}.question{min-height:53mm}.page-foot{position:absolute}.cover,.rules-page,.question-page,.closing{break-inside:avoid}.page:last-child{break-after:auto;page-break-after:auto}}
 `;
-  const questionCount=questionDraft.length;
-  const html='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>تقرير أسئلة مسابقة عباقرة الكيمياء والتقنية</title><style>'+styles+'</style></head><body>'+
-    '<section class="page cover"><div class="cover-top"><div class="school-lockup"><img class="seal" src="'+location.origin+'/images/ministry-of-education.png" alt="شعار وزارة التعليم"><div><b>ثانوية الشقيري</b><small>مسابقة عباقرة الكيمياء والتقنية</small></div></div><span class="cover-tag">تقرير رسمي · '+new Date().toLocaleDateString('ar-SA')+'</span></div><div class="cover-main"><span class="eyebrow">مسابقة المعرفة والتميّز</span><h1>مسابقة عباقرة الكيمياء</h1><h2>ثانوية الشقيري</h2><p class="cover-sub">هل أنت مستعد لاختبار معلوماتك الكيميائية؟<br>رحلة علمية تجمع الدقة والسرعة وروح التحدي.</p><div class="chem-scene"><div class="trophy"><span class="cup">🥈</span><b>٢</b><small>تميّز</small></div><div class="trophy"><span class="cup">🏆</span><b>١</b><small>عبقري الكيمياء</small></div><div class="trophy"><span class="cup">🥉</span><b>٣</b><small>إبداع</small></div></div></div><div class="cover-bottom"><div class="cover-slogan">سجّل الآن ونافس على لقب عبقري الكيمياء<small>أسئلة اختيار من متعدد · '+questionCount+' سؤالًا · زمن الاختبار ١٠ دقائق</small></div><div class="qr"><img src="https://akhtbart.vercel.app/studentsimages/competition-qr.svg" alt="رمز QR للمسابقة"><div><b>امسح الرمز وابدأ التحدي</b><a href="https://akhtbart.vercel.app/students">akhtbart.vercel.app/students</a><small>الرابط الرسمي للمسابقة</small></div></div><div class="prepared-credit">إعداد المعلم/ إبراهيم معدلي</div></div></section>'+
-    '<section class="page rules-page"><header class="page-heading"><div><small>دليل المشارك</small><h1>شروط المسابقة</h1></div><span class="page-count">تعليمات المشاركة</span></header><div class="rules-intro">نرحب بمشاركتك في مسابقة عباقرة الكيمياء والتقنية. يرجى قراءة الشروط التالية والالتزام بها قبل البدء.</div><div class="rules-grid">'+rulesHtml+'</div><div class="rules-note">بعد التسليم، صوّر شاشة النتيجة التي توضح الدرجة وزمن الحل، ثم أرسلها للجهة المنظمة لتوثيق مشاركتك.</div><footer class="page-foot"><span>ثانوية الشقيري · عباقرة الكيمياء والتقنية</span><span>شروط المسابقة</span></footer></section>'+questionPages+
-    '<section class="page closing"><img class="closing-seal" src="'+location.origin+'/images/ministry-of-education.png" alt="شعار وزارة التعليم"><span class="eyebrow" style="margin-top:8mm">ختام التقرير</span><h1>شكرًا لمشاركتكم</h1><h2>بالعلم نكتشف… وبالشغف نبدع</h2><p>نتمنى لجميع المشاركين التوفيق والتميّز. نعتز بكل طالب جعل من الفضول العلمي بدايةً لاكتشاف جديد.</p><div class="closing-card">الفائز هو من يجمع بين صحة الإجابات، وسرعة الحل، والالتزام بشروط المسابقة.</div><span class="site">https://akhtbart.vercel.app/students</span><span class="school">ثانوية الشقيري · مسابقة عباقرة الكيمياء والتقنية</span><span class="prepared-credit">إعداد المعلم/ إبراهيم معدلي</span></section></body></html>';
-  win.document.open();win.document.write(html);win.document.close();win.opener=null;win.focus();
-  Promise.all([...win.document.images].map(img=>img.decode().catch(()=>{}))).then(()=>setTimeout(()=>win.print(),250));
+  const questionCount = questionDraft.length;
+  const html = '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>تقرير أسئلة مسابقة عباقرة الكيمياء والتقنية</title><style>' + styles + "</style></head><body>" + '<section class="page cover"><div class="cover-top"><div class="school-lockup"><img class="seal" src="' + location.origin + '/images/ikhtibarati-logo.png" alt="شعار اختباراتي"><div><b>ثانوية الشقيري</b><small>مسابقة عباقرة الكيمياء والتقنية</small></div></div><span class="cover-tag">تقرير رسمي · ' + new Date().toLocaleDateString("ar-SA") + '</span></div><div class="cover-main"><span class="eyebrow">مسابقة المعرفة والتميّز</span><h1>مسابقة عباقرة الكيمياء</h1><h2>ثانوية الشقيري</h2><p class="cover-sub">هل أنت مستعد لاختبار معلوماتك الكيميائية؟<br>رحلة علمية تجمع الدقة والسرعة وروح التحدي.</p><div class="chem-scene"><div class="trophy"><span class="cup">🥈</span><b>٢</b><small>تميّز</small></div><div class="trophy"><span class="cup">🏆</span><b>١</b><small>عبقري الكيمياء</small></div><div class="trophy"><span class="cup">🥉</span><b>٣</b><small>إبداع</small></div></div></div><div class="cover-bottom"><div class="cover-slogan">سجّل الآن ونافس على لقب عبقري الكيمياء<small>أسئلة اختيار من متعدد · ' + questionCount + ' سؤالًا · زمن الاختبار ١٠ دقائق</small></div><div class="qr"><img src="https://akhtbart.vercel.app/studentsimages/competition-qr.svg" alt="رمز QR للمسابقة"><div><b>امسح الرمز وابدأ التحدي</b><a href="https://akhtbart.vercel.app/students">akhtbart.vercel.app/students</a><small>الرابط الرسمي للمسابقة</small></div></div><div class="prepared-credit">إعداد المعلم/ إبراهيم معدلي</div></div></section>' + '<section class="page rules-page"><header class="page-heading"><div><small>دليل المشارك</small><h1>شروط المسابقة</h1></div><span class="page-count">تعليمات المشاركة</span></header><div class="rules-intro">نرحب بمشاركتك في مسابقة عباقرة الكيمياء والتقنية. يرجى قراءة الشروط التالية والالتزام بها قبل البدء.</div><div class="rules-grid">' + rulesHtml + '</div><div class="rules-note">بعد التسليم، صوّر شاشة النتيجة التي توضح الدرجة وزمن الحل، ثم أرسلها للجهة المنظمة لتوثيق مشاركتك.</div><footer class="page-foot"><span>ثانوية الشقيري · عباقرة الكيمياء والتقنية</span><span>شروط المسابقة</span></footer></section>' + questionPages + '<section class="page closing"><img class="closing-seal" src="' + location.origin + '/images/ikhtibarati-logo.png" alt="شعار اختباراتي"><span class="eyebrow" style="margin-top:8mm">ختام التقرير</span><h1>شكرًا لمشاركتكم</h1><h2>بالعلم نكتشف… وبالشغف نبدع</h2><p>نتمنى لجميع المشاركين التوفيق والتميّز. نعتز بكل طالب جعل من الفضول العلمي بدايةً لاكتشاف جديد.</p><div class="closing-card">الفائز هو من يجمع بين صحة الإجابات، وسرعة الحل، والالتزام بشروط المسابقة.</div><span class="site">https://akhtbart.vercel.app/students</span><span class="school">ثانوية الشقيري · مسابقة عباقرة الكيمياء والتقنية</span><span class="prepared-credit">إعداد المعلم/ إبراهيم معدلي</span></section></body></html>';
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  win.opener = null;
+  win.focus();
+  Promise.all([...win.document.images].map((img) => img.decode().catch(() => {}))).then(() => setTimeout(() => win.print(), 250));
 }

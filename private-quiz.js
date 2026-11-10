@@ -301,7 +301,7 @@ async function submit() {
     clearState();
     $("#timerbox").classList.add("hidden");
     $("#content").innerHTML =
-      `<div class="panel success">${steps(3)}<div class="success-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 4 4L19 6"/></svg></div><div class="eyebrow">تم استلام المشاركة بنجاح</div><div class="score">${p.needsReview ? "قيد المراجعة" : esc(p.score)}${p.needsReview ? "" : '<span style="font-size:20px;color:var(--muted)"> / 100</span>'}</div><h1>${p.needsReview ? "تم استلام الإجابات" : p.passed ? "أحسنت، اجتزت الاختبار" : "تم حفظ إجاباتك"}</h1><p class="desc">${esc(quiz.completionMessage || p.message)} · زمن الحل ${mmss(p.durationSec)}${p.needsReview ? " · الدرجة قيد المراجعة" : ""}</p></div>`;
+      `<div class="panel success">${steps(3)}<div class="success-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 4 4L19 6"/></svg></div><div class="eyebrow">تم استلام المشاركة بنجاح</div><div class="score">${p.needsReview ? "قيد المراجعة" : esc(p.earnedPoints)}${p.needsReview ? "" : `<span style="font-size:20px;color:var(--muted)"> / ${esc(p.totalPoints)}</span>`}</div><h1>${p.needsReview ? "تم استلام الإجابات" : p.passed ? "أحسنت، اجتزت الاختبار" : "تم حفظ إجاباتك"}</h1><p class="desc">${esc(quiz.completionMessage || p.message)} · زمن الحل ${mmss(p.durationSec)}${p.needsReview ? " · الدرجة قيد المراجعة" : ` · النسبة ${esc(p.score)}%`}</p></div>`;
   } catch (error) {
     showError(
       error.message === "attempt_expired_or_submitted"
