@@ -180,7 +180,7 @@ async function loadOverview() {
     ["activeQuizzes", "responses", "activeCodes", "usedCodes"].forEach((id) => ($("#" + id).textContent = "—"));
   }
 }
-const quizIsActive = (quiz, now = Date.now()) => quiz.published && (!quiz.startsAt || new Date(quiz.startsAt).getTime() <= now) && (!quiz.endsAt || new Date(quiz.endsAt).getTime() > now);
+const quizIsActive = (quiz, now = Date.now()) => typeof quiz.isActive === "boolean" ? quiz.isActive : quiz.published && (!quiz.startsAt || new Date(quiz.startsAt).getTime() <= now) && (!quiz.endsAt || new Date(quiz.endsAt).getTime() > now);
 function activeQuizAvailability(quiz) {
   if (!quiz.endsAt) return "متاح دون تاريخ انتهاء";
   return (
