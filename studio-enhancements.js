@@ -711,6 +711,7 @@ loadQuizzes = async function () {
     const { r, p } = await api("/api/studio/quizzes");
     if (!r.ok) throw Error();
     quizCatalog = p.quizzes;
+    renderActiveQuizLinks(quizCatalog);
     $("#quizList").innerHTML = quizCatalog.map((q) => `<article class="card card-pad link-card"><div><div class="actions"><span class="badge ${q.published ? "" : "wait"}">${q.published ? "منشور" : "مسودة"}</span><span class="muted">${q.questionCount} سؤال · ${Math.ceil(q.durationSec / 60)} دقيقة</span></div><h3 style="margin:10px 0 0">${esc(q.title)}</h3><code class="link-code" dir="ltr">${esc(quizLink(q))}</code></div><div class="actions"><button class="btn secondary copyquiz" data-slug="${esc(q.slug)}">نسخ الرابط</button><button class="btn secondary showqr" data-slug="${esc(q.slug)}">QR</button><a class="btn secondary" href="${esc(quizLink(q))}" target="_blank" rel="noopener">معاينة</a>${role === "viewer" ? "" : `<button class="btn secondary editquiz" data-id="${esc(q.quizId)}">تعديل</button><button class="btn secondary togglequiz" data-id="${esc(q.quizId)}" data-published="${!q.published}">${q.published ? "إيقاف" : "نشر"}</button>`}${["manager", "superadmin"].includes(role) ? `<button class="btn secondary responses" data-id="${esc(q.quizId)}">النتائج</button>` : ""}</div><div id="qr-${esc(q.quizId)}" class="quiz-qr hidden" style="grid-column:1/-1"></div><div id="review-${esc(q.quizId)}" style="grid-column:1/-1"></div></article>`).join("") || '<div class="card empty">لا توجد اختبارات بعد. اختر أحد القوالب وابدأ أول اختبار.</div>';
     $$(".copyquiz").forEach(
       (x) =>
@@ -724,6 +725,7 @@ loadQuizzes = async function () {
     $$(".responses").forEach((x) => (x.onclick = () => loadResponses(x.dataset.id)));
     $$(".showqr").forEach((x) => (x.onclick = () => loadQr(x.dataset.slug, x.closest("article"))));
   } catch {
+    renderActiveQuizLinks(null);
     $("#quizList").innerHTML = '<div class="card empty">تعذر تحميل الاختبارات.</div>';
   }
 };

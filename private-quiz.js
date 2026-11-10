@@ -2,7 +2,7 @@ const $ = (s) => document.querySelector(s),
   $$ = (s) => [...document.querySelectorAll(s)];
 const slug =
   new URLSearchParams(location.search).get("slug") ||
-  location.pathname.match(/^\/quiz\/([^/]+)/)?.[1] ||
+  location.pathname.match(/^\/(?:quiz|exam)\/([^/]+)/)?.[1] ||
   "";
 let quiz = null,
   questions = [],

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { parsePageRanges,smartChunks } from '../lib/documents/pdf-ingestion.js';
 import { gradeResponse } from '../lib/ai/grading-service.js';
 import { validIntegritySettings,validSavedQuizQuestion } from '../lib/studio-auth.js';
@@ -25,6 +26,7 @@ const secondQuizSlug=createQuizSlug('إبراهيم-معدلي','b75306dd-5ff5-4
 assert.notEqual(firstQuizSlug,secondQuizSlug);
 assert.ok(firstQuizSlug.length<24);
 assert.equal(examLink(firstQuizSlug),`https://www.ikhtibarati.com/exam/${encodeURIComponent(firstQuizSlug)}`);
+assert.match(readFileSync(new URL('../private-quiz.js',import.meta.url),'utf8'),/\(\?:quiz\|exam\)/);
 const scorePlan=normalizeScorePlan({allocations:[{index:0,points:3,reason:'صعب'},{index:1,points:1,reason:'سهل'}]},2,100);assert.equal(scorePlan.allocations.reduce((sum,item)=>sum+item.points,0),100);assert.equal(scorePlan.allocations[0].points,75);
 const grade=await gradeResponse({questions:[{type:'single',prompt:'س1',options:['أ','ب'],correct:[1],tags:['المفهوم الأول']},{type:'boolean',prompt:'س2',correct:true,tags:['المفهوم الثاني']}],answers:[[1],false]});
 assert.equal(grade.score,50);assert.equal(grade.details[0].scoreRatio,1);assert.equal(grade.details[1].scoreRatio,0);assert.ok(grade.learningGaps.includes('المفهوم الثاني'));
