@@ -2178,7 +2178,7 @@
         </div>
         <div class="nav-label">مساحة العمل</div>
         <nav class="nav">
-          <button class="active" data-view="overview"><span class="icon">▦</span>نظرة عامة</button><button data-view="quizzes"><span class="icon">◈</span>الاختبارات والروابط</button><button data-view="settings"><span class="icon">⚙</span>إعدادات الحساب</button><button data-view="codes"><span class="icon">⌑</span>أكواد الوصول</button><button data-view="pdf"><span class="icon">▤</span>استوديو PDF الذكي</button>
+          <button class="active" data-view="overview"><span class="icon">▦</span>نظرة عامة</button><button data-view="quizzes"><span class="icon">＋</span>إنشاء الاختبارات</button><button data-view="links"><span class="icon">↗</span>روابط الاختبارات والإحصائيات</button><button data-view="settings"><span class="icon">⚙</span>إعدادات الحساب</button><button data-view="codes"><span class="icon">⌑</span>أكواد الوصول</button><button data-view="pdf"><span class="icon">▤</span>استوديو PDF الذكي</button>
         </nav>
         <div class="sidebar-foot"><span id="roleLabel">جلسة محمية</span><button class="btn ghost" id="logoutBtn">خروج</button></div>
       </aside>
@@ -2213,25 +2213,6 @@
               <strong id="usedCodes">—</strong><small>سجل تدقيق الأكواد</small>
             </article>
           </div>
-          <section class="active-links-section" aria-labelledby="activeLinksTitle">
-            <div class="section-head">
-              <div class="active-links-heading">
-                <span class="active-links-icon" aria-hidden="true"
-                  ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
-                    <path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1" /></svg
-                ></span>
-                <div>
-                  <h2 id="activeLinksTitle">روابط الاختبارات النشطة</h2>
-                  <p>وصول سريع للاختبارات المتاحة للمشاركين الآن.</p>
-                </div>
-              </div>
-              <span class="active-links-count" id="activeLinksCount">جارٍ التحميل…</span>
-            </div>
-            <div id="activeQuizLinks" class="grid active-links-grid">
-              <div class="active-links-empty"><div class="skeleton"></div></div>
-            </div>
-          </section>
           <div class="section-head">
             <div>
               <h2>مساحة عمل مرنة</h2>
@@ -2240,6 +2221,24 @@
             <button class="btn" data-goto="quizzes">إنشاء اختبار خاص</button>
           </div>
           <div class="callout">تُحفظ بيانات الاختبارات والأكواد في قاعدة مركزية، ويُتحقق من حالة جلسة الإدارة من الخادم عند استخدام واجهات API.</div>
+        </section>
+        <section data-panel="links" class="hidden">
+          <div class="quiz-hero">
+            <div><span class="eyebrow">مركز المتابعة</span><h2>روابط الاختبارات والإحصائيات</h2><p>كل الروابط النشطة والنتائج والإحصائيات التفصيلية في مكان واحد.</p></div>
+            <button class="btn secondary" id="refreshQuizzes">↻ تحديث البيانات</button>
+          </div>
+          <section class="active-links-section" aria-labelledby="activeLinksTitle">
+            <div class="section-head">
+              <div class="active-links-heading">
+                <span class="active-links-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg></span>
+                <div><h2 id="activeLinksTitle">روابط الاختبارات النشطة</h2><p>الاختبارات المنشورة والمتاحة للمشاركين الآن.</p></div>
+              </div>
+              <span class="active-links-count" id="activeLinksCount">جارٍ التحميل…</span>
+            </div>
+            <div id="activeQuizLinks" class="grid active-links-grid"><div class="active-links-empty"><div class="skeleton"></div></div></div>
+          </section>
+          <div class="section-head"><div><h2>جميع الاختبارات والنتائج</h2><p>نسخ الرابط، رمز QR، فتح الإحصائيات، مراجعة الأسماء والدرجات والتصدير.</p></div></div>
+          <div id="quizList" class="grid"></div>
         </section>
         <section data-panel="codes" class="hidden">
           <div class="section-head">
@@ -2355,14 +2354,6 @@
               </aside>
             </div>
           </form>
-          <div class="section-head">
-            <div>
-              <h2>الاختبارات والروابط</h2>
-              <p>إدارة النشر، نسخ الرابط، رمز QR، النتائج والتعديل.</p>
-            </div>
-            <button class="btn secondary" id="refreshQuizzes">↻ تحديث القائمة</button>
-          </div>
-          <div id="quizList" class="grid"></div>
         </section>
         <section data-panel="settings" class="hidden">
           <div class="quiz-hero">

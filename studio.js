@@ -57,12 +57,13 @@ function go(view) {
   $("#pageTitle").textContent = {
     overview: "نظرة عامة",
     codes: "أكواد الوصول",
-    quizzes: "الاختبارات والروابط",
+    quizzes: "إنشاء الاختبارات",
+    links: "روابط الاختبارات والإحصائيات",
     settings: "إعدادات الحساب",
     pdf: "استوديو PDF الذكي",
   }[view];
   if (view === "codes") void loadCodes();
-  if (view === "quizzes") void loadQuizzes();
+  if (view === "links") void loadQuizzes();
   if (view === "settings") void loadProfile();
   if (view === "pdf") void loadTemplates();
 }
@@ -512,9 +513,10 @@ $("#quizForm").onsubmit = async (e) => {
     if (!r.ok) throw Error(p.error);
     delete f.dataset.quizId;
     feedback.classList.remove("hidden");
-    feedback.innerHTML = quizId ? "تم تحديث الاختبار." : 'تم حفظ الاختبار. الرابط: <a href="' + esc(p.link) + '" rel="noopener" target="_blank">' + esc(p.link) + "</a>";
+    feedback.textContent = quizId ? "تم تحديث الاختبار." : "تم حفظ الاختبار. ستجده في قسم روابط الاختبارات والإحصائيات.";
     await loadQuizzes();
     await loadOverview();
+    if (!quizId) go("links");
   } catch (x) {
     feedback.classList.remove("hidden");
     feedback.textContent = x.message === "active_attempts" ? "توجد محاولة نشطة؛ انتظر انتهاءها قبل تعديل الأسئلة." : x.message === "ai_daily_limit" ? "بلغت الحد اليومي البالغ 20 مسودة. حاول غدًا." : x.message === "insufficient_permissions" ? "صلاحيتك للعرض فقط." : "تعذر الحفظ؛ راجع الأسئلة والإعدادات.";

@@ -454,7 +454,7 @@ function resetQuizBuilder() {
   $("#bulkQuestions").value = "";
   $("#bulkStatus").textContent = "";
   $("#quizFeedback").classList.add("hidden");
-  $("#pageTitle").textContent = "الاختبارات والروابط";
+  $("#pageTitle").textContent = "إنشاء الاختبارات";
   document.querySelector(".builder-grid")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 $("#newQuiz").onclick = resetQuizBuilder;
@@ -695,9 +695,10 @@ $("#quizForm").onsubmit = async (e) => {
     });
     if (!r.ok) throw Error(p.error);
     delete f.dataset.quizId;
-    feedback.innerHTML = quizId ? "تم تحديث الاختبار بنجاح." : 'تم حفظ الاختبار. <a href="' + esc(p.link) + '" rel="noopener" target="_blank">فتح الرابط الخاص ↗</a>';
+    feedback.textContent = quizId ? "تم تحديث الاختبار بنجاح." : "تم حفظ الاختبار. ستجده في قسم روابط الاختبارات والإحصائيات.";
     await loadQuizzes();
     await loadOverview();
+    if (!quizId) go("links");
   } catch (error) {
     feedback.textContent = error.message === "active_attempts" ? "توجد محاولة نشطة؛ انتظر انتهاءها قبل تعديل الأسئلة." : error.message === "insufficient_permissions" ? "صلاحيتك للعرض فقط." : "تعذر الحفظ؛ تأكد من اكتمال بيانات الطالب والأسئلة والإجابات الصحيحة.";
   } finally {
