@@ -7,6 +7,7 @@ import studio_overview from "../lib/platform-routes/studio/overview.js";
 import studio_profile from "../lib/platform-routes/studio/profile.js";
 import studio_organize_questions from "../lib/platform-routes/studio/organize-questions.js";
 import studio_document_questions from "../lib/platform-routes/studio/document-questions.js";
+import studio_delete_participant from "../lib/platform-routes/studio/delete-participant.js";
 import studio_distribute_scores from "../lib/platform-routes/studio/distribute-scores.js";
 import studio_grade_response from "../lib/platform-routes/studio/grade-response.js";
 import studio_live_responses from "../lib/platform-routes/studio/live-responses.js";
@@ -32,6 +33,7 @@ const routes = {
   "studio/profile": studio_profile,
   "studio/organize-questions": studio_organize_questions,
   "studio/document-questions": studio_document_questions,
+  "studio/delete-participant": studio_delete_participant,
   "studio/distribute-scores": studio_distribute_scores,
   "studio/grade-response": studio_grade_response,
   "studio/live-responses": studio_live_responses,

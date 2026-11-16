@@ -877,7 +877,7 @@ function renderResponseWorkspace(root, responses, quizId) {
             .map((f) => `<span><b>${esc(f.label)}:</b> ${f.type === "checkbox" ? (x.participantData[f.id] ? "نعم" : "لا") : esc(x.participantData[f.id])}</span>`)
             .join(" · "),
           feedback = x.aiFeedback || {};
-        return `<article class="question-card" data-response="${esc(x.id)}"><div class="actions" style="justify-content:space-between"><div><b>${esc(x.name)}</b> <span class="badge ${x.reviewStatus === "needs_review" ? "wait" : ""}">${x.reviewStatus === "needs_review" ? "بانتظار التصحيح" : x.reviewStatus === "graded" ? "تم التصحيح" : "مصحح آليًا"}</span></div><b>${displayGrade(x)}</b></div><p class="muted">${meta || "لا توجد بيانات إضافية"}<br>${new Date(x.completedAt).toLocaleString("ar-SA")} · ${Math.floor(x.durationSec / 60)}:${String(x.durationSec % 60).padStart(2, "0")} · مخالفات النزاهة: ${x.integritySummary?.violationCount || 0}</p><details><summary>الإجابات والتفاصيل</summary>${x.questions.map((q, i) => `<p><b>${esc(q.prompt)}</b><br>إجابة الطالب: ${esc(Array.isArray(x.answers[i]) ? x.answers[i].map((a) => q.options?.[a] || a).join("، ") : q.type === "boolean" ? (x.answers[i] ? "صح" : "خطأ") : x.answers[i])}${feedback.details?.[i] ? `<br><small>${esc(feedback.details[i].feedback)}</small>` : ""}</p>`).join("")}</details>${feedback.studentSummary ? `<div class="callout"><b>تحليل فجوات التعلم</b><p>${esc(feedback.studentSummary)}</p><small>نقاط القوة: ${(feedback.strengths || []).map(esc).join("، ") || "—"}<br>تحتاج مراجعة: ${(feedback.learningGaps || []).map(esc).join("، ") || "—"}</small></div>` : ""}<div class="actions"><button class="btn grade-ai" data-id="${esc(x.id)}">✦ تصحيح ذكي</button><label>الدرجة من ${responseTotal(x)} <input class="input grade-value" style="width:100px" type="number" min="0" max="${responseTotal(x)}" step="0.01" value="${responsePoints(x) ?? ""}"></label><button class="btn secondary save-grade" data-id="${esc(x.id)}">حفظ يدوي</button>${x.issuedAt ? `<button class="btn secondary print-report" data-id="${esc(x.id)}">تقرير PDF موثّق</button>` : ""}${x.verificationCode ? `<a class="btn secondary" href="/verify/${esc(x.verificationCode)}" target="_blank">تحقق عام</a>` : ""}</div></article>`;
+        return `<article class="question-card" data-response="${esc(x.id)}"><div class="actions" style="justify-content:space-between"><div><b>${esc(x.name)}</b> <span class="badge ${x.reviewStatus === "needs_review" ? "wait" : ""}">${x.reviewStatus === "needs_review" ? "بانتظار التصحيح" : x.reviewStatus === "graded" ? "تم التصحيح" : "مصحح آليًا"}</span></div><b>${displayGrade(x)}</b></div><p class="muted">${meta || "لا توجد بيانات إضافية"}<br>${new Date(x.completedAt).toLocaleString("ar-SA")} · ${Math.floor(x.durationSec / 60)}:${String(x.durationSec % 60).padStart(2, "0")} · مخالفات النزاهة: ${x.integritySummary?.violationCount || 0}</p><details><summary>الإجابات والتفاصيل</summary>${x.questions.map((q, i) => `<p><b>${esc(q.prompt)}</b><br>إجابة الطالب: ${esc(Array.isArray(x.answers[i]) ? x.answers[i].map((a) => q.options?.[a] || a).join("، ") : q.type === "boolean" ? (x.answers[i] ? "صح" : "خطأ") : x.answers[i])}${feedback.details?.[i] ? `<br><small>${esc(feedback.details[i].feedback)}</small>` : ""}</p>`).join("")}</details>${feedback.studentSummary ? `<div class="callout"><b>تحليل فجوات التعلم</b><p>${esc(feedback.studentSummary)}</p><small>نقاط القوة: ${(feedback.strengths || []).map(esc).join("، ") || "—"}<br>تحتاج مراجعة: ${(feedback.learningGaps || []).map(esc).join("، ") || "—"}</small></div>` : ""}<div class="actions"><button class="btn grade-ai" data-id="${esc(x.id)}">✦ تصحيح ذكي</button><label>الدرجة من ${responseTotal(x)} <input class="input grade-value" style="width:100px" type="number" min="0" max="${responseTotal(x)}" step="0.01" value="${responsePoints(x) ?? ""}"></label><button class="btn secondary save-grade" data-id="${esc(x.id)}">حفظ يدوي</button>${x.issuedAt ? `<button class="btn secondary print-report" data-id="${esc(x.id)}">تقرير PDF موثّق</button>` : ""}${x.verificationCode ? `<a class="btn secondary" href="/verify/${esc(x.verificationCode)}" target="_blank">تحقق عام</a>` : ""}<button class="btn danger delete-response" type="button" data-id="${esc(x.id)}" data-name="${esc(x.name)}">حذف المختبر</button></div></article>`;
       })
       .join("") || '<div class="empty">لا توجد إجابات لهذا الاختبار.</div>'
   }`;
@@ -915,6 +915,25 @@ function renderResponseWorkspace(root, responses, quizId) {
       }),
   );
   root.querySelectorAll(".print-report").forEach((button) => (button.onclick = () => printVerifiedReport(responses.find((x) => x.id === button.dataset.id))));
+  root.querySelectorAll(".delete-response").forEach(
+    (button) =>
+      (button.onclick = async () => {
+        if (!confirm(`حذف سجل ${button.dataset.name || "هذا المختبر"}؟\n\nسيتم حذف المحاولة والدرجة نهائيًا، وسيتمكن المختبر من الدخول مجددًا.`)) return;
+        button.disabled = true;
+        button.textContent = "جارٍ الحذف…";
+        const { r } = await api("/api/studio/delete-participant", {
+          method: "POST",
+          body: JSON.stringify({ quizId, recordId: button.dataset.id, recordType: "response" }),
+        });
+        if (!r.ok) {
+          button.disabled = false;
+          button.textContent = "حذف المختبر";
+          return alert("تعذر حذف سجل المختبر. حاول مجددًا.");
+        }
+        await refreshResponses(quizId, root);
+        void loadOverview();
+      }),
+  );
 }
 async function refreshResponses(quizId, root) {
   const { r, p } = await api("/api/studio/responses?quizId=" + encodeURIComponent(quizId));
