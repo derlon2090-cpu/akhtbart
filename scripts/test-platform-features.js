@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { parsePageRanges,smartChunks } from '../lib/documents/pdf-ingestion.js';
 import { gradeResponse } from '../lib/ai/grading-service.js';
 import { validIntegritySettings,validSavedQuizQuestion } from '../lib/studio-auth.js';
-import { scoreToPoints, totalQuizPoints, weightedScore } from '../lib/quiz-scoring.js';
+import { automaticQuizScore, normalizeTextAnswer, scoreToPoints, totalQuizPoints, weightedScore } from '../lib/quiz-scoring.js';
 import { createQuizSlug, examLink, normalizeAccountSlug } from '../lib/quiz-links.js';
 import { normalizeScorePlan } from '../lib/ai/score-distribution-service.js';
 
@@ -20,6 +20,8 @@ assert.equal(validSavedQuizQuestion({...documentQuestion,points:0}),false);
 assert.equal(weightedScore([{points:3},{points:1}],[1,0]),75);
 assert.equal(totalQuizPoints([{points:12},{points:8}]),20);
 assert.equal(scoreToPoints(75,[{points:12},{points:8}]),15);
+assert.equal(normalizeTextAnswer('  الإِجابة، الصحيحة!  '),'الاجابة الصحيحة');
+assert.equal(automaticQuizScore([{type:'single',correct:[1],points:2},{type:'text',accepted:['الماء'],points:3}],[[1],'الـمَاء']),100);
 assert.equal(normalizeAccountSlug('المعلم إبراهيم معدلي'),'ibrahim');
 const firstQuizSlug=createQuizSlug('إبراهيم-معدلي','a642f5cc-4ee4-47f0-8412-ebd3f6dc83d9');
 const secondQuizSlug=createQuizSlug('إبراهيم-معدلي','b75306dd-5ff5-48a1-9523-fce407ed94ea');
