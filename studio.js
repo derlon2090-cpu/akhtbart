@@ -304,7 +304,7 @@ async function deleteParticipantRecord(button, quizId) {
 async function openQuizStatistics(quizId) {
   const modal = $("#statsModal");
   currentStatsReport = null;
-  $("#exportStatsWord").disabled = $("#exportStatsPdf").disabled = true;
+  $("#exportStatsWord").disabled = $("#exportStatsPdf").disabled = $("#exportQuestionPdf").disabled = true;
   $("#statsModalTitle").textContent = "إحصائيات الاختبار";
   $("#statsModalSubtitle").textContent = "جارٍ جمع بيانات الدخول والنتائج…";
   $("#statsModalBody").innerHTML = '<div class="stats-loading"><div class="skeleton" style="margin:auto;max-width:520px"></div><p>جارٍ إعداد التقرير التفصيلي…</p></div>';
@@ -315,7 +315,7 @@ async function openQuizStatistics(quizId) {
     if (!r.ok) throw Error(p.error || "statistics_failed");
     currentStatsReport = p;
     renderQuizStatistics(p);
-    $("#exportStatsWord").disabled = $("#exportStatsPdf").disabled = false;
+    $("#exportStatsWord").disabled = $("#exportStatsPdf").disabled = $("#exportQuestionPdf").disabled = false;
   } catch (error) {
     $("#statsModalBody").innerHTML = '<div class="stats-error"><b>تعذّر تحميل الإحصائيات.</b><br><span>تأكد من صلاحية المدير ثم حاول مجددًا.</span></div>';
   }
@@ -342,6 +342,58 @@ function reportDocument(report) {
     .map(([label, value]) => `<div class="kpi"><span>${label}</span><b>${value}</b></div>`)
     .join("")}</div><div class="note">أعلى درجة: ${scoreLabel(s.highestScore, report.quiz.totalPoints)} · أدنى درجة: ${scoreLabel(s.lowestScore, report.quiz.totalPoints)} · أسرع زمن: ${formatDuration(s.fastestDurationSec)} · أطول زمن: ${formatDuration(s.slowestDurationSec)}</div><h2>سجل المشاركين</h2><table><thead><tr><th>#</th><th>الاسم</th><th>التواصل/المعرف</th><th>الحالة</th><th>الدرجة</th><th>الزمن</th><th>بدء</th><th>الإكمال</th><th>مخالفات</th></tr></thead><tbody>${rows || '<tr><td colspan="9">لا توجد بيانات.</td></tr>'}</tbody></table><h2>تحليل الأسئلة</h2><table><thead><tr><th>#</th><th>السؤال</th><th>أجاب</th><th>إجابات صحيحة</th><th>نسبة الصحة</th></tr></thead><tbody>${questions}</tbody></table><div class="footer">منصة الاختبارات · تم إنشاء التقرير ${formatStatDate(report.generatedAt)}</div></body></html>`;
 }
+function studioQuestionVisual(question) {
+  const text = `${question.prompt || ""} ${(question.options || []).join(" ")}`.toLowerCase();
+  const visuals = [
+    [/الأوزون|الغلاف الجوي/, "chemistry-lab", "طبقات الغلاف الجوي وتجربة علمية"],
+    [/كلوروفلوروكربون|cfc/, "chemistry-lab", "رسم توضيحي لمركبات كيميائية والبيئة"],
+    [/درجة الحرارة|بالون|التمدد/, "exothermic", "تجربة علمية توضح أثر الحرارة"],
+    [/مختبر|سلامة|يحظر/, "chemistry-lab", "أدوات السلامة داخل المختبر الكيميائي"],
+    [/الرقم الهيدروجيني|ph\\b/, "ph-scale", "مقياس الرقم الهيدروجيني للمحاليل"],
+    [/العدد الذري|بروتون/, "atomic-number", "رسم علمي لبنية الذرة"],
+    [/ماء|h2o|h₂o/, "water-molecule", "جزيء ماء مبسط"],
+    [/رابطة|إلكترون/, "covalent-bond", "رسم يوضح ارتباط الذرات"],
+    [/تبخر|سائل.*غاز/, "evaporation", "تحول السائل إلى غاز"],
+    [/عامل حفاز|حفاز/, "catalyst", "تجربة توضح دور العامل الحفاز"],
+    [/صدأ|حديد/, "rust", "تغير كيميائي على سطح معدن"],
+    [/حمض|فلز|هيدروجين/, "metal-acid", "تفاعل فلز مع محلول حمضي"],
+  ];
+  const found = visuals.find(([pattern]) => pattern.test(text));
+  return found ? { key: found[1], alt: found[2] } : { key: "chemistry-lab", alt: "رسم توضيحي احترافي لمفهوم علمي" };
+}
+function questionReportAnswer(question) {
+  if (question.type === "boolean") return question.correct === false ? "خطأ" : "صح";
+  if (question.type === "text") return Array.isArray(question.accepted) && question.accepted.length ? question.accepted.join("، ") : "إجابة نصية مفتوحة";
+  const letters = ["أ", "ب", "ج", "د", "هـ", "و"];
+  return (Array.isArray(question.correct) ? question.correct : []).map((index) => `${letters[index] || index + 1} - ${question.options?.[index] || ""}`).join("، ") || "—";
+}
+function questionReportQuestionHtml(question, number, includeImages) {
+  const letters = ["أ", "ب", "ج", "د", "هـ", "و"], visual = studioQuestionVisual(question);
+  const options = question.type === "boolean" ? ["صح", "خطأ"] : Array.isArray(question.options) ? question.options : [];
+  const visualHtml = includeImages ? `<figure class="question-visual"><img src="${location.origin}/images/questions/${encodeURIComponent(visual.key)}.svg" alt="${esc(visual.alt)}"><figcaption>${esc(visual.alt)}</figcaption></figure>` : "";
+  return `<article class="question-card ${includeImages ? "has-image" : ""}">${visualHtml}<div class="question-content"><div class="question-label"><span>السؤال ${String(number).padStart(2, "0")}</span><small>${question.type === "boolean" ? "صح أو خطأ" : question.type === "text" ? "إجابة نصية" : "اختيار من متعدد"}</small></div><h2>${esc(question.prompt || "")}</h2>${options.length ? `<div class="question-options">${options.map((option, index) => `<div><b>${letters[index]}</b><span>${esc(option)}</span></div>`).join("")}</div>` : ""}<p class="model-answer"><b>الإجابة النموذجية:</b> ${esc(questionReportAnswer(question))}</p></div></article>`;
+}
+function questionReportDocument(quiz, includeImages, preparedBy) {
+  const questions = Array.isArray(quiz.questions) ? quiz.questions : [], perPage = includeImages ? 3 : 4;
+  const groups = [];
+  for (let index = 0; index < questions.length; index += perPage) groups.push(questions.slice(index, index + perPage));
+  const generated = new Intl.DateTimeFormat("ar-SA", { dateStyle: "long" }).format(new Date());
+  const prepared = preparedBy || "إدارة أكاديمية الاختبار";
+  const questionPages = groups.map((group, pageIndex) => `<section class="page questions-page"><header class="page-header"><div><span>دليل الأسئلة</span><h1>${esc(quiz.title)}</h1></div><b>${pageIndex + 1} / ${groups.length}</b></header><div class="question-list">${group.map((question, offset) => questionReportQuestionHtml(question, pageIndex * perPage + offset + 1, includeImages)).join("")}</div><footer>أكاديمية الاختبار · تقرير الأسئلة · ${pageIndex + 1} / ${groups.length}</footer></section>`).join("");
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير أسئلة - ${esc(quiz.title)}</title><style>@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#edf2f7;color:#19273a;font-family:Tahoma,Arial,sans-serif;direction:rtl;-webkit-print-color-adjust:exact;print-color-adjust:exact}.page{position:relative;width:190mm;min-height:277mm;margin:8mm auto;background:#fff;padding:14mm;overflow:hidden;break-after:page;page-break-after:always}.cover{display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(140deg,#172554,#312e81 60%,#0f766e);color:#fff}.brand{display:flex;align-items:center;gap:4mm;color:#dbeafe;font-size:12px}.brand img{width:18mm;height:18mm;object-fit:contain;background:#fff;border-radius:4mm;padding:2mm}.cover-main{max-width:138mm}.cover .eyebrow,.page-header span{color:#67e8f9;font-weight:bold;font-size:11px}.cover h1{margin:6mm 0 3mm;font-size:31px;line-height:1.35}.cover p{margin:0;color:#dbeafe;font-size:15px;line-height:1.9}.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;margin-top:12mm}.fact{padding:4mm;border:1px solid #ffffff44;border-radius:4mm;background:#ffffff14}.fact span{display:block;color:#bae6fd;font-size:9px}.fact b{display:block;margin-top:2mm;font-size:17px}.cover-footer{border-top:1px solid #ffffff44;padding-top:5mm;color:#cbd5e1;font-size:11px}.rules{background:linear-gradient(160deg,#f8fafc,#eef6ff)}.page-header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:5mm;border-bottom:2px solid #cbd5e1}.page-header h1{margin:2mm 0 0;color:#1e3a8a;font-size:22px}.page-header>b{display:grid;place-items:center;width:12mm;height:12mm;border-radius:50%;background:#e0e7ff;color:#3730a3;font-size:10px}.intro{margin:7mm 0;padding:5mm;border-right:4px solid #14b8a6;background:#ecfeff;border-radius:3mm;color:#164e63;line-height:1.8}.rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:4mm}.rule{display:flex;gap:3mm;padding:4mm;border:1px solid #dbe4f0;border-radius:4mm;background:#fff}.rule b{display:grid;place-items:center;flex:0 0 8mm;height:8mm;border-radius:50%;background:#312e81;color:#fff}.rule h3{margin:0 0 1mm;font-size:12px;color:#1e3a8a}.rule p{margin:0;color:#526277;font-size:10px;line-height:1.65}.questions-page{padding:10mm}.question-list{display:grid;gap:4mm;margin-top:5mm}.question-card{border:1px solid #dbe4f0;border-right:2mm solid #4f46e5;border-radius:4mm;padding:4mm;background:linear-gradient(135deg,#fff,#f8fbff);break-inside:avoid;page-break-inside:avoid}.question-card.has-image{display:grid;grid-template-columns:42mm 1fr;gap:4mm;min-height:73mm}.question-visual{margin:0;display:grid;align-content:center;justify-items:center;gap:1mm;border-radius:3mm;background:#eef6ff;overflow:hidden}.question-visual img{width:100%;height:34mm;object-fit:contain}.question-visual figcaption{padding:0 2mm 2mm;color:#64748b;font-size:7px;text-align:center}.question-label{display:flex;justify-content:space-between;align-items:center;color:#4338ca;font-size:10px;font-weight:bold}.question-label small{padding:1mm 2mm;border-radius:10mm;background:#e0e7ff;color:#4338ca;font-size:8px}.question-content h2{margin:2mm 0 3mm;color:#1e293b;font-size:12px;line-height:1.65}.question-options{display:grid;grid-template-columns:1fr 1fr;gap:2mm}.question-options div{display:flex;gap:2mm;align-items:center;padding:1.5mm 2mm;border:1px solid #e2e8f0;border-radius:2mm;background:#fff;color:#475569;font-size:9px}.question-options b{display:grid;place-items:center;width:5mm;height:5mm;border-radius:1.5mm;background:#eef2ff;color:#4338ca;font-size:8px}.model-answer{margin:3mm 0 0;padding-top:2mm;border-top:1px dashed #cbd5e1;color:#166534;font-size:9px}.questions-page footer{position:absolute;right:10mm;left:10mm;bottom:5mm;display:flex;justify-content:space-between;border-top:1px solid #e2e8f0;padding-top:2mm;color:#64748b;font-size:8px}.closing{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:radial-gradient(circle at 50% 28%,#ecfeff,#eef2ff 55%,#fff)}.closing img{width:38mm;height:38mm;object-fit:contain}.closing h1{margin:7mm 0 2mm;color:#312e81;font-size:29px}.closing h2{margin:0;color:#0f766e;font-size:18px}.closing p{max-width:130mm;color:#526277;line-height:1.9;font-size:13px}.prepared{margin-top:8mm;padding:4mm 9mm;border:1px solid #c7d2fe;border-radius:20mm;background:#eef2ff;color:#3730a3;font-weight:bold}@media print{html,body{background:#fff}.page{width:auto;margin:0;min-height:277mm;box-shadow:none}.page:last-child{break-after:auto;page-break-after:auto}}</style></head><body><section class="page cover"><div class="brand"><img src="${location.origin}/images/ikhtibarati-logo.png" alt="شعار أكاديمية الاختبار"><span>أكاديمية الاختبار · تقرير تربوي احترافي</span></div><div class="cover-main"><span class="eyebrow">تقرير أسئلة الاختبار</span><h1>${esc(quiz.title)}</h1><p>${esc(quiz.description || "وثيقة منظمة لأسئلة الاختبار وتعليماته، صُممت للمراجعة والطباعة بصورة احترافية.")}</p><div class="facts"><div class="fact"><span>عدد الأسئلة</span><b>${questions.length}</b></div><div class="fact"><span>مدة الاختبار</span><b>${Math.ceil(Number(quiz.durationSec || 0) / 60)} دقيقة</b></div><div class="fact"><span>تاريخ التقرير</span><b>${esc(generated)}</b></div></div></div><div class="cover-footer">إعداد: ${esc(prepared)}<br>وثيقة تعليمية صادرة من أكاديمية الاختبار.</div></section><section class="page rules"><header class="page-header"><div><span>قبل البدء</span><h1>مقدمة وشروط الاختبار</h1></div><b>01</b></header><div class="intro">صُمم هذا الاختبار لقياس الفهم العلمي والقدرة على تطبيق المفاهيم بدقة. اقرأ كل سؤال بهدوء، ثم اختر الإجابة الأنسب وفقًا لما تعلمته.</div><div class="rules-grid"><article class="rule"><b>1</b><div><h3>الاستعداد</h3><p>اقرأ السؤال وجميع الخيارات قبل تحديد الإجابة.</p></div></article><article class="rule"><b>2</b><div><h3>إدارة الوقت</h3><p>وزّع وقتك على الأسئلة ولا تتوقف طويلًا عند سؤال واحد.</p></div></article><article class="rule"><b>3</b><div><h3>الدقة العلمية</h3><p>اعتمد على المفاهيم العلمية التي دُرست وتجنب التخمين السريع.</p></div></article><article class="rule"><b>4</b><div><h3>الالتزام</h3><p>التزم بتعليمات المراقب وسياسة النزاهة المعتمدة.</p></div></article><article class="rule"><b>5</b><div><h3>المراجعة</h3><p>راجع إجاباتك قبل التسليم إن بقي وقت متاح.</p></div></article><article class="rule"><b>6</b><div><h3>تقدير الجهد</h3><p>الهدف من الاختبار اكتشاف نقاط القوة وفرص التحسين.</p></div></article></div></section>${questionPages}<section class="page closing"><img src="${location.origin}/images/ikhtibarati-logo.png" alt="شعار أكاديمية الاختبار"><span class="eyebrow">ختام التقرير</span><h1>معًا نحو تعلّم أعمق</h1><h2>نتمنى لكم التوفيق والتميّز</h2><p>نأمل أن تسهم هذه الأسئلة في تعزيز الفهم والمراجعة المنظمة. المعرفة تنمو بالفضول، والممارسة، والتأمل في كل تجربة تعليمية.</p><div class="prepared">إعداد: ${esc(prepared)}</div></section></body></html>`;
+}
+async function openQuestionReportDialog() {
+  if (!currentStatsReport) return;
+  const quizId = currentStatsReport.quiz.id;
+  if (!quizCatalog.some((quiz) => quiz.quizId === quizId && Array.isArray(quiz.questions))) await loadQuizzes();
+  const quiz = quizCatalog.find((item) => item.quizId === quizId);
+  if (!quiz?.questions?.length) return alert("تعذّر تحميل أسئلة هذا الاختبار. حاول تحديث الصفحة.");
+  $("#questionReportTitle").textContent = `تقرير أسئلة: ${quiz.title}`;
+  $("#questionReportPreparedBy").value = $("#profileDisplayName")?.value || "إدارة أكاديمية الاختبار";
+  $("#questionReportModal").dataset.quizId = quizId;
+  $("#questionReportModal").classList.remove("hidden");
+}
+function closeQuestionReportDialog() { $("#questionReportModal").classList.add("hidden"); }
 $("#closeStats").onclick = closeQuizStatistics;
 $("#statsModal").onclick = (event) => {
   if (event.target === $("#statsModal")) closeQuizStatistics();
@@ -356,6 +408,24 @@ $("#exportStatsPdf").onclick = () => {
   popup.document.write(reportDocument(currentStatsReport));
   popup.document.close();
   setTimeout(() => popup.print(), 450);
+};
+$("#exportQuestionPdf").onclick = openQuestionReportDialog;
+$("#closeQuestionReport").onclick = closeQuestionReportDialog;
+$("#questionReportModal").onclick = (event) => {
+  if (event.target === $("#questionReportModal")) closeQuestionReportDialog();
+};
+$("#createQuestionReportPdf").onclick = () => {
+  const quiz = quizCatalog.find((item) => item.quizId === $("#questionReportModal").dataset.quizId);
+  if (!quiz?.questions?.length) return alert("تعذّر تجهيز أسئلة الاختبار. حاول تحديث الصفحة.");
+  const popup = open("", "_blank");
+  if (!popup) return alert("اسمح بالنوافذ المنبثقة لإنشاء تقرير PDF.");
+  const includeImages = $("#questionReportVisuals").value === "with-images";
+  popup.document.open();
+  popup.document.write(questionReportDocument(quiz, includeImages, $("#questionReportPreparedBy").value.trim()));
+  popup.document.close();
+  popup.opener = null;
+  Promise.all([...popup.document.images].map((image) => image.decode?.().catch(() => {}))).then(() => setTimeout(() => popup.print(), 300));
+  closeQuestionReportDialog();
 };
 $("#exportStatsWord").onclick = () => {
   if (!currentStatsReport) return;
@@ -657,7 +727,17 @@ $("#generatePdf").onclick = async () => {
     $("#pdfPreview").innerHTML = rendered(draftHtml);
     $("#pdfStatus").textContent = "تم إنشاء المسودة. راجع المعاينة ثم احفظها أو صدّرها.";
   } catch (x) {
-    $("#pdfStatus").textContent = x.message === "ai_not_configured" ? "فعّل AI Gateway في مشروع Vercel أو أضف AI_GATEWAY_API_KEY." : x.message === "ai_daily_limit" ? "بلغت الحد اليومي البالغ 20 مسودة. حاول غدًا." : "تعذر التوليد. تحقق من إعدادات AI Gateway.";
+    const messages = {
+      ai_not_configured: "فعّل AI Gateway في مشروع Vercel أو أضف AI_GATEWAY_API_KEY.",
+      ai_auth_failed: "فشلت مصادقة AI Gateway. حدّث VERCEL_OIDC_TOKEN أو أضف AI_GATEWAY_API_KEY صالحًا.",
+      ai_payment_required: "يحتاج AI Gateway إلى رصيد أو وسيلة دفع في Vercel.",
+      ai_access_denied: "المشروع لا يملك صلاحية استخدام AI Gateway أو هذا النموذج.",
+      ai_rate_limited: "بلغت حد طلبات AI Gateway. حاول بعد قليل.",
+      ai_model_unavailable: "نموذج AI المضبوط غير متاح. راجع AI_GATEWAY_MODEL.",
+      ai_timeout: "استغرق التوليد وقتًا طويلًا. حاول مرة أخرى.",
+      ai_daily_limit: "بلغت الحد اليومي البالغ 20 مسودة. حاول غدًا.",
+    };
+    $("#pdfStatus").textContent = messages[x.message] || "تعذر التوليد من AI Gateway. حاول مرة أخرى.";
   } finally {
     b.disabled = false;
   }

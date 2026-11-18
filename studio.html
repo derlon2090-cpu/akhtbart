@@ -2444,11 +2444,21 @@
             <h2 id="statsModalTitle">إحصائيات الاختبار</h2>
             <p id="statsModalSubtitle" class="muted">بيانات الدخول والنتائج والزمن</p>
           </div>
-          <div class="stats-toolbar"><button class="btn secondary" id="exportStatsWord" type="button" disabled>تصدير Word</button><button class="btn secondary" id="exportStatsPdf" type="button" disabled>تصدير PDF</button><button class="btn ghost stats-close" id="closeStats" type="button" aria-label="إغلاق">×</button></div>
+          <div class="stats-toolbar"><button class="btn secondary" id="exportStatsWord" type="button" disabled>تصدير Word</button><button class="btn secondary" id="exportStatsPdf" type="button" disabled>تصدير PDF</button><button class="btn secondary" id="exportQuestionPdf" type="button" disabled>تقرير الأسئلة PDF</button><button class="btn ghost stats-close" id="closeStats" type="button" aria-label="إغلاق">×</button></div>
         </header>
         <div class="stats-modal-body" id="statsModalBody">
           <div class="stats-loading">جارٍ تحميل الإحصائيات…</div>
         </div>
+      </div>
+    </div>
+    <div id="questionReportModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="questionReportTitle">
+      <div class="modal-card" style="max-width:560px">
+        <span class="eyebrow">تقرير جاهز للطباعة</span>
+        <h2 id="questionReportTitle">تقرير أسئلة الاختبار</h2>
+        <p class="muted">يتضمن مقدمة وشروط الاختبار وخاتمة عربية، ويعرض 3 أسئلة في الصفحة عند اختيار الصور أو 4 أسئلة بدون صور.</p>
+        <label class="field"><span>نمط الصور التوضيحية</span><select id="questionReportVisuals"><option value="with-images">مع صورة توضيحية لكل سؤال</option><option value="without-images">بدون صور</option></select></label>
+        <label class="field"><span>اسم مُعدّ التقرير</span><input id="questionReportPreparedBy" class="input" maxlength="120" placeholder="مثال: الأستاذ إبراهيم معدلي"></label>
+        <div class="actions"><button class="btn" id="createQuestionReportPdf" type="button">إنشاء تقرير PDF</button><button class="btn ghost" id="closeQuestionReport" type="button">إلغاء</button></div>
       </div>
     </div>
     <script src="/studio.js" defer></script>
