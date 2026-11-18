@@ -342,7 +342,23 @@ function reportDocument(report) {
     .map(([label, value]) => `<div class="kpi"><span>${label}</span><b>${value}</b></div>`)
     .join("")}</div><div class="note">أعلى درجة: ${scoreLabel(s.highestScore, report.quiz.totalPoints)} · أدنى درجة: ${scoreLabel(s.lowestScore, report.quiz.totalPoints)} · أسرع زمن: ${formatDuration(s.fastestDurationSec)} · أطول زمن: ${formatDuration(s.slowestDurationSec)}</div><h2>سجل المشاركين</h2><table><thead><tr><th>#</th><th>الاسم</th><th>التواصل/المعرف</th><th>الحالة</th><th>الدرجة</th><th>الزمن</th><th>بدء</th><th>الإكمال</th><th>مخالفات</th></tr></thead><tbody>${rows || '<tr><td colspan="9">لا توجد بيانات.</td></tr>'}</tbody></table><h2>تحليل الأسئلة</h2><table><thead><tr><th>#</th><th>السؤال</th><th>أجاب</th><th>إجابات صحيحة</th><th>نسبة الصحة</th></tr></thead><tbody>${questions}</tbody></table><div class="footer">منصة الاختبارات · تم إنشاء التقرير ${formatStatDate(report.generatedAt)}</div></body></html>`;
 }
-function studioQuestionVisual(question) {
+function studioQuestionVisual(question, position) {
+  const positionVisuals = [
+    ["ozone-layer", "طبقات الغلاف الجوي وطبقة الأوزون"],
+    ["green-chemistry", "الكيمياء الخضراء وتحلل مواد التغليف"],
+    ["montreal-protocol", "اتفاقية دولية لحماية البيئة"],
+    ["balloon-temperature", "تجربة توضح أثر الحرارة في حجم البالون"],
+    ["lab-safety", "إجراءات السلامة في المختبر الكيميائي"],
+    ["qualitative-data", "تصنيف البيانات في تجربة علمية"],
+    ["cfc-molecule", "نموذج جزيئي لمركب كلوروفلوروكربوني"],
+    ["matter-vs-ideas", "مقارنة بين المادة والأفكار المجردة"],
+    ["scientific-hypothesis", "صياغة فرضية علمية قابلة للاختبار"],
+    ["scientific-method", "خطوات الطريقة العلمية المنظمة"],
+  ];
+  if (Number.isInteger(position) && position > 0 && position <= positionVisuals.length) {
+    const [key, alt] = positionVisuals[position - 1];
+    return { key, alt };
+  }
   const text = `${question.prompt || ""} ${(question.options || []).join(" ")}`.toLowerCase();
   const visuals = [
     [/الأوزون|الغلاف الجوي/, "ozone-layer", "طبقات الغلاف الجوي وطبقة الأوزون"],
@@ -366,7 +382,7 @@ function questionReportAnswer(question) {
   return (Array.isArray(question.correct) ? question.correct : []).map((index) => `${letters[index] || index + 1} - ${question.options?.[index] || ""}`).join("، ") || "—";
 }
 function questionReportQuestionHtml(question, number, includeImages) {
-  const letters = ["أ", "ب", "ج", "د", "هـ", "و"], visual = studioQuestionVisual(question);
+  const letters = ["أ", "ب", "ج", "د", "هـ", "و"], visual = studioQuestionVisual(question, number);
   const options = question.type === "boolean" ? ["صح", "خطأ"] : Array.isArray(question.options) ? question.options : [];
   const visualHtml = includeImages ? `<figure class="question-visual"><img src="${location.origin}/images/questions/${encodeURIComponent(visual.key)}.svg" alt="${esc(visual.alt)}"><figcaption>${esc(visual.alt)}</figcaption></figure>` : "";
   return `<article class="question-card ${includeImages ? "has-image" : ""}">${visualHtml}<div class="question-content"><div class="question-label"><span>السؤال ${String(number).padStart(2, "0")}</span><small>${question.type === "boolean" ? "صح أو خطأ" : question.type === "text" ? "إجابة نصية" : "اختيار من متعدد"}</small></div><h2>${esc(question.prompt || "")}</h2>${options.length ? `<div class="question-options">${options.map((option, index) => `<div><b>${letters[index]}</b><span>${esc(option)}</span></div>`).join("")}</div>` : ""}<p class="model-answer"><b>الإجابة النموذجية:</b> ${esc(questionReportAnswer(question))}</p></div></article>`;
@@ -390,6 +406,10 @@ async function openQuestionReportDialog() {
   $("#questionReportPreparedBy").value = $("#profileDisplayName")?.value || "إدارة أكاديمية الاختبار";
   $("#questionReportModal").dataset.quizId = quizId;
   $("#questionReportModal").classList.remove("hidden");
+}
+function emeraldQuestionReportTheme(html) {
+  const css = `<style>.cover{background:linear-gradient(140deg,#f7fffc,#e8f8f1 58%,#eafaf6)!important;border-top-color:#0b8a6a!important;color:#174d40!important}.cover .eyebrow,.page-header span{color:#08795e!important}.cover h1,.page-header h1,.closing h1{color:#075f4e!important}.cover p{color:#52786e!important}.fact{border-color:#cfe8df!important;background:#ffffffd9!important}.fact b{color:#08795e!important}.cover-footer{border-top-color:#cfe8df!important;color:#55766e!important}.rules{background:linear-gradient(160deg,#fff,#f1fbf7)!important}.page-header>b{background:#dff5ec!important;color:#08795e!important}.rule b{background:#0b8a6a!important}.rule h3{color:#08795e!important}.question-card{border-right-color:#10a57f!important;background:linear-gradient(135deg,#fff,#f5fcf9)!important}.question-visual{background:#edf9f4!important}.question-label{color:#08795e!important}.question-label small{background:#def4eb!important;color:#08795e!important}.question-options b{background:#e4f7ef!important;color:#08795e!important}.closing{background:radial-gradient(circle at 50% 28%,#effff8,#effaf6 55%,#fff)!important}.closing h2{color:#08795e!important}.prepared{border-color:#bfe8d8!important;background:#effaf5!important;color:#076b54!important}</style>`;
+  return html.replace("</head>", `${css}</head>`);
 }
 function closeQuestionReportDialog() { $("#questionReportModal").classList.add("hidden"); }
 $("#closeStats").onclick = closeQuizStatistics;
@@ -419,7 +439,7 @@ $("#createQuestionReportPdf").onclick = () => {
   if (!popup) return alert("اسمح بالنوافذ المنبثقة لإنشاء تقرير PDF.");
   const includeImages = $("#questionReportVisuals").value === "with-images";
   popup.document.open();
-  popup.document.write(questionReportDocument(quiz, includeImages, $("#questionReportPreparedBy").value.trim()));
+  popup.document.write(emeraldQuestionReportTheme(questionReportDocument(quiz, includeImages, $("#questionReportPreparedBy").value.trim())));
   popup.document.close();
   popup.opener = null;
   Promise.all([...popup.document.images].map((image) => image.decode?.().catch(() => {}))).then(() => setTimeout(() => popup.print(), 300));
